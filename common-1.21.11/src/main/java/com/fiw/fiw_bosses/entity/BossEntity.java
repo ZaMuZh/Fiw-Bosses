@@ -954,12 +954,17 @@ public class BossEntity extends Monster {
             pylon.snapTo(x, y, z, getRandom().nextFloat() * 360, 0);
             pylon.applyMinionDefinition(def, this);
             pylon.setPersistenceRequired();
-            sl.addFreshEntity(pylon);
-            shieldPylons.add(pylon.getUUID());
+            // Only track guardians that the world actually accepted. This keeps
+            // failed spawns from creating invisible shield links or false counts.
+            if (sl.addFreshEntity(pylon)) {
+                shieldPylons.add(pylon.getUUID());
+            } else {
+                pylon.discard();
+            }
         }
         if (shieldPylons.isEmpty()) return;
         shieldActive = true;
-        broadcastNearby(fillShield(cfg.message, count));
+        broadcastNearby(fillShield(cfg.message, shieldPylons.size()));
     }
 
     private void dropShield(boolean broken) {
