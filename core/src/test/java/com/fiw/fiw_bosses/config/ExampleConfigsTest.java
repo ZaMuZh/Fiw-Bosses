@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -67,6 +69,39 @@ class ExampleConfigsTest {
         issues.addAll(ConfigValidator.references(bosses, bossFiles, minions));
         assertTrue(checked > 20, "only " + checked + " example files found under " + examples());
         assertTrue(issues.isEmpty(), "\n" + String.join("\n", issues.stream().map(ConfigIssue::describe).toList()));
+    }
+
+    @Test
+    void ancestralAbomasnowHasFourCompleteGuardianPhases() throws IOException {
+        Path bossFile = examples().resolve("abomasnow_ancestral/bosses/abomasnow_ancestral.json");
+        Path minionFile = examples().resolve("abomasnow_ancestral/minions/snover_guard.json");
+        BossDefinition boss;
+        MinionDefinition minion;
+        try (Reader reader = Files.newBufferedReader(bossFile, StandardCharsets.UTF_8)) {
+            var result = ConfigValidator.boss("abomasnow_ancestral/bosses/abomasnow_ancestral.json", reader);
+            assertTrue(result.issues().isEmpty(), () -> result.issues().toString());
+            boss = result.value();
+        }
+        try (Reader reader = Files.newBufferedReader(minionFile, StandardCharsets.UTF_8)) {
+            var result = ConfigValidator.minion("abomasnow_ancestral/minions/snover_guard.json", reader);
+            assertTrue(result.issues().isEmpty(), () -> result.issues().toString());
+            minion = result.value();
+        }
+
+        assertNotNull(boss);
+        assertNotNull(minion);
+        assertEquals(4, boss.phases.size(), "the encounter must have four phases");
+        assertEquals(56, boss.phases.stream().mapToInt(p -> p.shield == null ? 0 : p.shield.count).sum(),
+                "all guardian waves must total 56 Snover");
+        assertEquals("snover_guard", boss.phases.get(0).shield.minion);
+        assertEquals(8, boss.phases.get(0).shield.count);
+        assertEquals(12, boss.phases.get(1).shield.count);
+        assertEquals(16, boss.phases.get(2).shield.count);
+        assertEquals(20, boss.phases.get(3).shield.count);
+        assertEquals("cobblemon:pokemon:abomasnow form=mega", boss.phases.get(3).renderEntity);
+        assertEquals("cobblemon:pokemon:snover", minion.renderEntity);
+        assertTrue(minion.abilities.stream().anyMatch(a -> "melee_slash".equals(a.type)),
+                "Snover guardians must have an actual attack");
     }
 
     @Test
