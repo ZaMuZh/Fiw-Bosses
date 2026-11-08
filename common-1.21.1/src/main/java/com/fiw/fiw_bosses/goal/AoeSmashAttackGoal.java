@@ -50,6 +50,7 @@ public class AoeSmashAttackGoal extends Goal {
 
     @Override
     public void start() {
+        boss.playAttackAnimation();
         windupTick = 0;
         if (!boss.level().isClientSide) {
             ServerLevel level = (ServerLevel) boss.level();
