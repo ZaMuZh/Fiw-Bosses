@@ -24,10 +24,10 @@
       "abilities": [
         {
           "type": "aoe_smash",
-          "cooldownTicks": 90,
+          "cooldownTicks": 78,
           "params": {
             "radius": 7,
-            "damage": 7,
+            "damage": 12,
             "knockback": 1.8,
             "taunt": "&b¡ABOMASNOW GOLPEA EL GLACIAR!"
           }
@@ -44,11 +44,11 @@
         },
         {
           "type": "melee_slash",
-          "cooldownTicks": 65,
+          "cooldownTicks": 44,
           "params": {
             "range": 6,
             "arc": 135,
-            "damage": 6,
+            "damage": 9,
             "taunt": "&b¡GARRAS DE HIELO!"
           }
         }
@@ -72,7 +72,7 @@
       "abilities": [
         {
           "type": "particle_tornado",
-          "cooldownTicks": 180,
+          "cooldownTicks": 125,
           "params": {
             "maxRadius": 8,
             "height": 12,
@@ -80,7 +80,7 @@
             "rotationSpeed": 13,
             "twist": 25,
             "disks": 18,
-            "damage": 1,
+            "damage": 1.8,
             "particle": "minecraft:snowflake",
             "accentParticle": "minecraft:cloud",
             "taunt": "&b&l¡TORMENTA DE VENTISCA!"
@@ -88,11 +88,11 @@
         },
         {
           "type": "ground_spike",
-          "cooldownTicks": 145,
+          "cooldownTicks": 105,
           "params": {
             "radius": 13,
             "spikeCount": 14,
-            "damage": 7,
+            "damage": 12,
             "knockback": 1.7,
             "markTicks": 35,
             "spikeTicks": 22
@@ -100,11 +100,11 @@
         },
         {
           "type": "ice_crystal",
-          "cooldownTicks": 190,
+          "cooldownTicks": 135,
           "params": {
             "radius": 12,
             "centerRadius": 4,
-            "damage": 6,
+            "damage": 11,
             "slowDuration": 70,
             "freezeDuration": 28,
             "windupTicks": 24,
@@ -113,12 +113,12 @@
         },
         {
           "type": "icicle_rain",
-          "cooldownTicks": 165,
+          "cooldownTicks": 125,
           "params": {
             "radius": 12,
             "height": 22,
             "icicleCount": 20,
-            "damage": 6,
+            "damage": 10,
             "warnTicks": 32,
             "rainTicks": 28
           }
@@ -143,10 +143,10 @@
       "abilities": [
         {
           "type": "slam",
-          "cooldownTicks": 115,
+          "cooldownTicks": 95,
           "params": {
             "radius": 9,
-            "damage": 9,
+            "damage": 14,
             "knockback": 2.2,
             "windupTicks": 24,
             "teleportRange": 7,
@@ -155,7 +155,7 @@
         },
         {
           "type": "particle_tornado",
-          "cooldownTicks": 160,
+          "cooldownTicks": 115,
           "params": {
             "maxRadius": 10,
             "height": 14,
@@ -163,7 +163,7 @@
             "rotationSpeed": 16,
             "twist": 28,
             "disks": 20,
-            "damage": 1,
+            "damage": 2,
             "particle": "minecraft:snowflake",
             "accentParticle": "minecraft:cloud",
             "taunt": "&3&l¡VENTISCA ANCESTRAL!"
@@ -171,11 +171,11 @@
         },
         {
           "type": "ground_spike",
-          "cooldownTicks": 125,
+          "cooldownTicks": 95,
           "params": {
             "radius": 16,
             "spikeCount": 18,
-            "damage": 8,
+            "damage": 13,
             "knockback": 2,
             "markTicks": 40,
             "spikeTicks": 25
@@ -183,7 +183,7 @@
         },
         {
           "type": "freeze",
-          "cooldownTicks": 180,
+          "cooldownTicks": 140,
           "params": {
             "duration": 55,
             "intensity": 120,
@@ -193,12 +193,12 @@
         },
         {
           "type": "icicle_rain",
-          "cooldownTicks": 145,
+          "cooldownTicks": 120,
           "params": {
             "radius": 15,
             "height": 24,
             "icicleCount": 26,
-            "damage": 7,
+            "damage": 12,
             "warnTicks": 30,
             "rainTicks": 26
           }
@@ -223,10 +223,10 @@
       "abilities": [
         {
           "type": "slam",
-          "cooldownTicks": 95,
+          "cooldownTicks": 82,
           "params": {
             "radius": 11,
-            "damage": 10,
+            "damage": 16,
             "knockback": 2.5,
             "windupTicks": 28,
             "teleportRange": 8,
@@ -235,7 +235,7 @@
         },
         {
           "type": "particle_tornado",
-          "cooldownTicks": 145,
+          "cooldownTicks": 105,
           "params": {
             "maxRadius": 12,
             "height": 16,
@@ -243,7 +243,7 @@
             "rotationSpeed": 18,
             "twist": 32,
             "disks": 22,
-            "damage": 1,
+            "damage": 2.2,
             "particle": "minecraft:snowflake",
             "accentParticle": "minecraft:cloud",
             "taunt": "&b&l¡LA VENTISCA FINAL!"
@@ -251,11 +251,11 @@
         },
         {
           "type": "ground_spike",
-          "cooldownTicks": 110,
+          "cooldownTicks": 88,
           "params": {
             "radius": 19,
             "spikeCount": 22,
-            "damage": 9,
+            "damage": 15,
             "knockback": 2.2,
             "markTicks": 45,
             "spikeTicks": 28
@@ -263,11 +263,11 @@
         },
         {
           "type": "ice_crystal",
-          "cooldownTicks": 155,
+          "cooldownTicks": 120,
           "params": {
             "radius": 15,
             "centerRadius": 5,
-            "damage": 8,
+            "damage": 13,
             "slowDuration": 80,
             "freezeDuration": 35,
             "windupTicks": 28,
@@ -276,12 +276,12 @@
         },
         {
           "type": "icicle_rain",
-          "cooldownTicks": 125,
+          "cooldownTicks": 108,
           "params": {
             "radius": 18,
             "height": 26,
             "icicleCount": 32,
-            "damage": 8,
+            "damage": 14,
             "warnTicks": 28,
             "rainTicks": 24
           }
