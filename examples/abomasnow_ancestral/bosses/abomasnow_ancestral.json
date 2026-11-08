@@ -80,7 +80,7 @@
       ],
       "shield": {
         "minion": "snover_guard",
-        "count": 8,
+        "count": 4,
         "radius": 11,
         "message": "&b¡Los guardianes del glaciar protegen a su señor! ¡Derrotad a los Snover!",
         "brokenMessage": "&b¡La protección ancestral se ha debilitado! ¡Atacad a Abomasnow!",
@@ -151,7 +151,7 @@
       ],
       "shield": {
         "minion": "snover_guard",
-        "count": 12,
+        "count": 6,
         "radius": 13,
         "message": "&b¡Los guardianes del glaciar vuelven a proteger a su señor! ¡Derrotad a los Snover!",
         "brokenMessage": "&b¡La barrera de hielo se ha hecho añicos! ¡Atacad!",
@@ -231,7 +231,7 @@
       ],
       "shield": {
         "minion": "snover_guard",
-        "count": 16,
+        "count": 8,
         "radius": 15,
         "message": "&3¡Los últimos guardianes ancestrales protegen a su señor! ¡Acabad con ellos!",
         "brokenMessage": "&3¡La protección ancestral ha caído! ¡Atacad a Abomasnow!",
@@ -314,7 +314,7 @@
       ],
       "shield": {
         "minion": "snover_guard",
-        "count": 20,
+        "count": 10,
         "radius": 17,
         "message": "&b&l¡VEINTE SNOVER GUARDAN EL ÚLTIMO ALIENTO DE SU SEÑOR! ¡DERROTADLOS!",
         "brokenMessage": "&b&l¡EL ESCUDO FINAL SE HA ROTO! ¡ACABAD CON ABOMASNOW!",
