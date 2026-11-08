@@ -123,7 +123,9 @@ public class AoeSmashAttackGoal extends Goal {
                 boss.dealAbilityDamage(entity, boss.damageSources().mobAttack(boss), finalDamage);
 
                 Vec3 dir = entity.position().subtract(center).normalize();
-                double yLaunch = 0.4 + (1.0 - dist / radius) * 0.4;
+                // A heavier vertical pop makes the shockwave feel like a true glacial detonation.
+                // The outer edge still launches clearly; the centre gets the strongest lift.
+                double yLaunch = 0.85 + (1.0 - dist / radius) * 0.45;
                 entity.push(dir.x * knockback, yLaunch, dir.z * knockback);
                 entity.hurtMarked = true;
                 hitCount++;
