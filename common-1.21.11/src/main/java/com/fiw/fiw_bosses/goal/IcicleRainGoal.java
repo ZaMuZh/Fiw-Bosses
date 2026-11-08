@@ -181,14 +181,19 @@ public class IcicleRainGoal extends Goal {
         while (iterator.hasNext()) {
             ActiveIcicle icicle = iterator.next();
             FallingBlockEntity entity = icicle.entity;
-            if (entity.isRemoved() || entity.getY() <= icicle.impact.groundY + 1.1) {
-                // FallingBlockEntity may place itself on landing. Remove only the ice
-                // block spawned by this attack; never touch a pre-existing arena block.
+            boolean reachedImpact = entity.getY() <= icicle.impact.groundY + 1.1;
+            if (reachedImpact) {
+                // Only a projectile that actually reached the marked ground can deal
+                // impact damage. A projectile removed by chunk unload/interruption
+                // must not create a phantom explosion.
                 if (level.getBlockState(icicle.landingPos).is(icicle.state.getBlock())) {
                     level.setBlock(icicle.landingPos, Blocks.AIR.defaultBlockState(), 3);
                 }
                 shatter(level, icicle.impact);
                 if (entity.isAlive()) entity.discard();
+                iterator.remove();
+            } else if (entity.isRemoved()) {
+                // Unloaded or externally removed before impact: silently forget it.
                 iterator.remove();
             }
         }
@@ -222,6 +227,18 @@ public class IcicleRainGoal extends Goal {
     public void stop() {
         cooldownTimer = cooldown;
         active = false;
+        // The projectiles are temporary attack entities. Remove airborne ones on
+        // interruption, but never clear blocks at their landing coordinates: those
+        // coordinates may have been modified by players during the warning/volley.
+        if (!boss.level().isClientSide) {
+            for (ActiveIcicle icicle : falling) {
+                if (!icicle.entity.isRemoved()) icicle.entity.discard();
+            }
+        }
+        falling.clear();
+        impacts.clear();
+        spawned = 0;
+        age = 0;
     }
 
     private record ImpactPoint(double x, double z, int groundY) {}
