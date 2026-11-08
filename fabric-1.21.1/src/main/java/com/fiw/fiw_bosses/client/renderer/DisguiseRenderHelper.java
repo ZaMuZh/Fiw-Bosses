@@ -76,7 +76,7 @@ final class DisguiseRenderHelper {
         int attackTicks = source.getAttackAnimationTicks();
         int attackStyle = source.getAttackAnimation();
         if (attackTicks > 0) {
-            float duration = attackStyle == 6 ? 50.0f : ((attackStyle == 2 || attackStyle == 3) ? 34.0f : 28.0f);
+            float duration = attackStyle == 7 ? 90.0f : (attackStyle == 6 ? 50.0f : ((attackStyle == 2 || attackStyle == 3) ? 34.0f : 28.0f));
             float progress = 1.0f - attackTicks / duration;
             float anticipation = smoothstep(0.0f, 0.36f, progress);
             float strike = smoothstep(0.36f, 0.55f, progress);
@@ -101,7 +101,7 @@ final class DisguiseRenderHelper {
                     attackLean = 12.0f * anticipation + 8.0f * strike - 20.0f * recovery;
                     attackTwist = (float) Math.sin(progress * Math.PI) * 6.0f;
                 }
-                case 6 -> { // Phase awakening: rise, hold the glacial energy, then release.
+                case 7 -> { // Mega evolution: compress, rise in a spiral of frost, flare, then settle into the new form.\n                    float pulse = (float) Math.sin(progress * Math.PI);\n                    float surge = smoothstep(0.18f, 0.72f, progress);\n                    attackLean = -18.0f * anticipation + 10.0f * strike - 5.0f * recovery;\n                    attackTwist = (float) Math.sin(progress * Math.PI * 5.0f) * (3.0f + 5.0f * pulse);\n                    bob += pulse * 0.28f + surge * 0.06f;\n                }\n                case 6 -> { // Phase awakening: rise, hold the glacial energy, then release.
                     float pulse = (float) Math.sin(progress * Math.PI);
                     attackLean = -10.0f * anticipation + 7.0f * strike - 4.0f * recovery;
                     attackTwist = (float) Math.sin(progress * Math.PI * 2.0) * 3.0f;
