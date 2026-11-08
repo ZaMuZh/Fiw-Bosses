@@ -255,6 +255,13 @@ final class DisguiseRenderHelper {
     private static Entity createFake(BossEntity source, String disguiseId) {
         if (disguiseId.startsWith("cobblemon:pokemon:")) {
             String pokemonProperties = disguiseId.substring("cobblemon:pokemon:".length());
+            // Mega Showdown exposes Mega forms as Cobblemon aspects, not standalone
+            // PokemonProperties keys. Accept the concise boss-config syntax while
+            // converting it to the canonical `aspects=...` property before parsing.
+            pokemonProperties = pokemonProperties.replaceAll(
+                    "(?<![\\w])mega_evolution=mega(?![\\w])",
+                    "aspects=mega_evolution=mega"
+            );
             if (!pokemonProperties.contains("level=")) pokemonProperties += " level=50";
             if (!pokemonProperties.startsWith("species=")) pokemonProperties = "species=" + pokemonProperties;
             return createCobblemonDisguise(source, pokemonProperties);

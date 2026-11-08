@@ -320,7 +320,7 @@
         "brokenMessage": "&b&l¡EL ESCUDO FINAL SE HA ROTO! ¡ACABAD CON ABOMASNOW!",
         "blockedMessage": "&7La última barrera resiste. Quedan {left} Snover."
       },
-      "renderEntity": "cobblemon:pokemon:abomasnow mega_evolution=mega"
+      "renderEntity": "cobblemon:pokemon:abomasnow aspects=mega_evolution=mega"
     }
   ],
   "loot": [
