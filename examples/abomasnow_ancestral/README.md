@@ -8,6 +8,7 @@ Copia los archivos así:
 
 - `bosses/abomasnow_ancestral.json` → `config/fiw_bosses/bosses/abomasnow_ancestral.json`
 - `minions/snover_guard.json` → `config/fiw_bosses/minions/snover_guard.json`
+- `skins/snover_guard.png` → `config/fiw_bosses/skins/snover_guard.png`
 
 Después ejecuta `/boss reload` y `/boss validate`.
 
@@ -17,6 +18,6 @@ La configuración usa el sistema de escudo por fase que ya existe en FIW Bosses.
 
 ## Estado de esta entrega
 
-Esta es la primera base de configuración: fases, ataques existentes y bloqueo por guardianes. El minion usa actualmente la entidad visual personalizada de FIW Bosses. **Todavía no incluye el modelo/textura real de Snover, la barrera de hielo dibujada con conexiones individuales, animaciones nuevas de esqueleto ni la transformación real a Mega-Abomasnow.** Esas partes requieren cambios de código y recursos cliente/servidor; no se deben dar por implementadas por copiar estos JSON.
+Esta es la primera base de configuración: fases, ataques existentes y bloqueo por guardianes. El minion usa la entidad personalizada de FIW Bosses con una skin de Minecraft inspirada en Snover. No es todavía el modelo 3D nativo de Cobblemon. La barrera de nieve y los enlaces de energía sí están implementados en código. **Todavía faltan el modelo 3D real de Snover, animaciones nuevas de esqueleto, la secuencia de carámbanos proyectiles y la transformación real a Mega-Abomasnow.** Esas partes requieren más cambios de código y recursos cliente/servidor; no se deben dar por implementadas por copiar estos archivos.
 
 La habilidad `particle_tornado` usa partículas de nieve y nube para representar la ventisca; `ground_spike` y `ice_crystal` usan los efectos que ya trae el mod. Los valores de daño son una primera calibración y deben probarse en el servidor con el equipo y armadura reales.
