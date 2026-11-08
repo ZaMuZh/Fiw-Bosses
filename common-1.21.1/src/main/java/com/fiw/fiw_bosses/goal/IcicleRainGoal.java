@@ -137,8 +137,10 @@ public class IcicleRainGoal extends Goal {
         if (age % 3 != 0) return;
         for (ImpactPoint point : impacts) {
             double pulse = 0.95 + Math.sin(age * 0.55) * 0.18;
-            for (int i = 0; i < 12; i++) {
-                double angle = Math.PI * 2.0 * i / 12.0 + age * 0.035;
+            // Eight clear points keep the warning readable without flooding the
+            // server with hundreds of individual particle packets in the final phase.
+            for (int i = 0; i < 8; i++) {
+                double angle = Math.PI * 2.0 * i / 8.0 + age * 0.035;
                 double x = point.x + Math.cos(angle) * pulse;
                 double z = point.z + Math.sin(angle) * pulse;
                 level.sendParticles(ParticleTypes.END_ROD,
@@ -146,7 +148,7 @@ public class IcicleRainGoal extends Goal {
             }
             level.sendParticles(ParticleTypes.SNOWFLAKE,
                     point.x, point.groundY + 0.12, point.z,
-                    2, 0.35, 0.02, 0.35, 0.01);
+                    1, 0.18, 0.02, 0.18, 0.01);
         }
     }
 
