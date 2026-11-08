@@ -23,7 +23,7 @@ La primera fase ya cuenta con cinco patrones de ataque: explosión AOE, carga fr
 
 ## Equilibrio
 
-Los daños y cooldowns están ajustados para que el combate suponga un reto con armadura completa de diamante. La carga frontal conserva sus valores originales. Los Snover tienen 40 de vida y buscan jugadores por sí mismos en un radio de 20 bloques. Al alcanzar a un jugador, realizan un golpe cuerpo a cuerpo cada 16 ticks (0,8 segundos) que inflige 3 puntos de daño fijo (1,5 corazones), sin reducción por los puntos normales de armadura; no empujan al jugador y muestran partículas de impacto. No atacan a jugadores en creativo ni espectadores.
+Los daños y cooldowns están ajustados para que el combate suponga un reto con armadura completa de diamante. La carga frontal conserva sus valores originales. Los Snover tienen 40 de vida y buscan jugadores por sí mismos en un radio de 20 bloques. Al alcanzar a un jugador, realizan un golpe cuerpo a cuerpo cada 20 ticks (1 segundo) que inflige 3 puntos de daño fijo (1,5 corazones), sin reducción por los puntos normales de armadura; no empujan al jugador y muestran partículas de impacto. No atacan a jugadores en creativo ni espectadores.
 
 ## Mega-Abomasnow y animaciones
 
