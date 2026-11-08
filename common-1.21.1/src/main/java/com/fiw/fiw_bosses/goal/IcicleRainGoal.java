@@ -113,7 +113,7 @@ public class IcicleRainGoal extends Goal {
             renderWarnings(level);
             if (age == Math.max(1, warnTicks - 8)) {
                 level.playSound(null, boss.getX(), boss.getY(), boss.getZ(),
-                        SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.HOSTILE, 1.5f, 0.55f);
+                        SoundEvents.BEACON_AMBIENT, SoundSource.HOSTILE, 1.5f, 0.55f);
             }
             return;
         }
