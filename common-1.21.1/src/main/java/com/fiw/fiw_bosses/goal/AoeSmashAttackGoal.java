@@ -125,7 +125,7 @@ public class AoeSmashAttackGoal extends Goal {
                 Vec3 dir = entity.position().subtract(center).normalize();
                 // A heavier vertical pop makes the shockwave feel like a true glacial detonation.
                 // The outer edge still launches clearly; the centre gets the strongest lift.
-                double yLaunch = 0.85 + (1.0 - dist / radius) * 0.45;
+                double yLaunch = 0.65 + (1.0 - dist / radius) * 0.35;
                 entity.push(dir.x * knockback, yLaunch, dir.z * knockback);
                 entity.hurtMarked = true;
                 hitCount++;
