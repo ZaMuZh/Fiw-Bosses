@@ -157,13 +157,20 @@ public class IcicleRainGoal extends Goal {
                 ? Blocks.PACKED_ICE.defaultBlockState()
                 : Blocks.BLUE_ICE.defaultBlockState();
 
+        BlockPos landingPos = BlockPos.containing(point.x, point.groundY + 1, point.z);
+        if (!level.isEmptyBlock(landingPos)) {
+            // Don't overwrite arena builds or existing blocks at the impact point.
+            shatter(level, point);
+            return;
+        }
+
         BlockState previous = level.getBlockState(spawnPos);
         level.setBlock(spawnPos, state, 3);
         FallingBlockEntity entity = FallingBlockEntity.fall(level, spawnPos, state);
         level.setBlock(spawnPos, previous, 3);
         entity.dropItem = false;
         entity.setDeltaMovement(0.0, -0.85, 0.0);
-        falling.add(new ActiveIcicle(entity, point));
+        falling.add(new ActiveIcicle(entity, point, landingPos, state));
         level.sendParticles(ParticleTypes.SNOWFLAKE,
                 point.x, point.groundY + height, point.z,
                 7, 0.18, 0.25, 0.18, 0.02);
@@ -175,6 +182,11 @@ public class IcicleRainGoal extends Goal {
             ActiveIcicle icicle = iterator.next();
             FallingBlockEntity entity = icicle.entity;
             if (entity.isRemoved() || entity.getY() <= icicle.impact.groundY + 1.1) {
+                // FallingBlockEntity may place itself on landing. Remove only the ice
+                // block spawned by this attack; never touch a pre-existing arena block.
+                if (level.getBlockState(icicle.landingPos).is(icicle.state.getBlock())) {
+                    level.setBlock(icicle.landingPos, Blocks.AIR.defaultBlockState(), 3);
+                }
                 shatter(level, icicle.impact);
                 if (entity.isAlive()) entity.discard();
                 iterator.remove();
@@ -213,5 +225,6 @@ public class IcicleRainGoal extends Goal {
     }
 
     private record ImpactPoint(double x, double z, int groundY) {}
-    private record ActiveIcicle(FallingBlockEntity entity, ImpactPoint impact) {}
+    private record ActiveIcicle(FallingBlockEntity entity, ImpactPoint impact,
+                                BlockPos landingPos, BlockState state) {}
 }
