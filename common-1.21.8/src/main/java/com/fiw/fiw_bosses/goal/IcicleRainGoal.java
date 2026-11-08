@@ -153,6 +153,11 @@ public class IcicleRainGoal extends Goal {
         int x = net.minecraft.util.Mth.floor(point.x);
         int z = net.minecraft.util.Mth.floor(point.z);
         BlockPos spawnPos = new BlockPos(x, point.groundY + Math.max(8, height), z);
+        // Never replace an arena/build block to create a projectile, and keep the
+        // temporary entity inside the dimension's build limits.
+        if (spawnPos.getY() >= level.getMaxBuildHeight() || !level.isEmptyBlock(spawnPos)) {
+            return;
+        }
         BlockState state = level.getRandom().nextBoolean()
                 ? Blocks.PACKED_ICE.defaultBlockState()
                 : Blocks.BLUE_ICE.defaultBlockState();
@@ -168,6 +173,7 @@ public class IcicleRainGoal extends Goal {
         level.setBlock(spawnPos, state, 3);
         FallingBlockEntity entity = FallingBlockEntity.fall(level, spawnPos, state);
         level.setBlock(spawnPos, previous, 3);
+        if (entity.isRemoved()) return;
         entity.dropItem = false;
         entity.disableDrop(); // Destroy the falling block on landing instead of placing arena ice.
         entity.setDeltaMovement(0.0, -0.85, 0.0);
