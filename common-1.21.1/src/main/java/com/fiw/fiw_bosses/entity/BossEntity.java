@@ -868,7 +868,62 @@ public class BossEntity extends Monster {
             Entity e = sl.getEntity(id);
             return e == null || !e.isAlive();
         });
-        if (shieldPylons.isEmpty()) dropShield(true);
+        if (shieldPylons.isEmpty()) {
+            dropShield(true);
+            return;
+        }
+        tickShieldVisual(sl, phase.shield);
+    }
+
+    /**
+     * Snow-glass barrier around the boss, with a visible energy tether to every living
+     * guardian. The shell loses rings and density as guardians are defeated.
+     */
+    private void tickShieldVisual(ServerLevel sl, ShieldConfig cfg) {
+        if (tickCount % 4 != 0) return;
+
+        int remaining = shieldPylons.size();
+        double strength = Math.max(0.08, Math.min(1.0, (double) remaining / Math.max(1, cfg.count)));
+        int rings = Math.max(1, (int) Math.ceil(3.0 * strength));
+        int points = Math.max(8, (int) Math.round(24.0 * strength));
+        double radius = 2.15 + (1.0 - strength) * 0.7;
+        double baseY = getY() + 0.35;
+        double height = 2.8;
+
+        for (int ring = 0; ring < rings; ring++) {
+            double y = baseY + (rings == 1 ? height * 0.5 : height * ring / (rings - 1.0));
+            double rotation = tickCount * 2.5 + ring * 18.0;
+            for (int p = 0; p < points; p++) {
+                double angle = Math.toRadians(rotation + p * (360.0 / points));
+                double px = getX() + Math.cos(angle) * radius;
+                double pz = getZ() + Math.sin(angle) * radius;
+                sl.sendParticles(ParticleTypes.SNOWFLAKE, px, y, pz, 1, 0, 0.015, 0, 0);
+                if ((p + ring) % 3 == 0) {
+                    sl.sendParticles(ParticleTypes.END_ROD, px, y, pz, 1, 0, 0, 0, 0);
+                }
+            }
+        }
+
+        // A tether for each guardian makes the source of the protection obvious.
+        for (UUID id : shieldPylons) {
+            Entity guardian = sl.getEntity(id);
+            if (guardian == null || !guardian.isAlive()) continue;
+            double x1 = getX();
+            double y1 = getY() + 1.55;
+            double z1 = getZ();
+            double x2 = guardian.getX();
+            double y2 = guardian.getY() + Math.max(0.4, guardian.getBbHeight() * 0.6);
+            double z2 = guardian.getZ();
+            int steps = 6;
+            for (int step = 0; step <= steps; step++) {
+                double t = step / (double) steps;
+                sl.sendParticles(ParticleTypes.END_ROD,
+                        x1 + (x2 - x1) * t,
+                        y1 + (y2 - y1) * t,
+                        z1 + (z2 - z1) * t,
+                        1, 0, 0, 0, 0);
+            }
+        }
     }
 
     private void armShield(ServerLevel sl, ShieldConfig cfg) {
@@ -904,7 +959,20 @@ public class BossEntity extends Monster {
         shieldActive = false;
         shieldPylons.clear();
         PhaseDefinition phase = phaseManager != null ? phaseManager.getCurrentPhase() : null;
-        if (broken && phase != null && phase.shield != null) broadcastNearby(fillShield(phase.shield.brokenMessage, 0));
+        if (broken && level() instanceof ServerLevel sl) {
+            // Shatter outward instead of silently removing the protection.
+            sl.sendParticles(ParticleTypes.SNOWFLAKE,
+                    getX(), getY() + 1.4, getZ(),
+                    90, 2.8, 1.8, 2.8, 0.12);
+            sl.sendParticles(ParticleTypes.CLOUD,
+                    getX(), getY() + 1.0, getZ(),
+                    24, 1.8, 0.8, 1.8, 0.08);
+            sl.playSound(null, getX(), getY(), getZ(),
+                    SoundEvents.SHIELD_BREAK, SoundSource.HOSTILE, 2.0f, 0.65f);
+        }
+        if (broken && phase != null && phase.shield != null) {
+            broadcastNearby(fillShield(phase.shield.brokenMessage, 0));
+        }
     }
 
     /** Removes this boss's shield pylons (arena reset, new shield). */
@@ -951,6 +1019,11 @@ public class BossEntity extends Monster {
     private void tickGuards() {
         if (definition == null || !(level() instanceof ServerLevel sl)) return;
         tickVehicle();
+
+        // Keep shield state and its visual effects responsive every tick. The remaining
+        // anti-cheese, rage and arena work below stays throttled to once per second.
+        if (tracksFight() && bossState == BossState.ACTIVE) tickShield(sl);
+
         if (tickCount % 20 != 0) return;
         if (home == null) home = position();
         long now = sl.getGameTime();
@@ -959,7 +1032,6 @@ public class BossEntity extends Monster {
             stuckTracker.reset();
             return;
         }
-        if (tracksFight()) tickShield(sl);
         tickAntiCheese(sl, now);
     }
 
