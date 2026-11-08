@@ -102,7 +102,7 @@ public class BossPhaseManager {
     public void restoreToPhase(int newIndex) {
         if (newIndex < 0 || newIndex >= phases.size()) return;
         currentPhaseIndex = newIndex;
-        applyEffective();
+        applyEffective(false);
     }
 
     public void transitionToPhase(int newIndex) {
@@ -117,7 +117,7 @@ public class BossPhaseManager {
             playTransitionEffects(phase);
         }
 
-        applyEffective();
+        applyEffective(!isInitial);
 
         if (!isInitial && !boss.level().isClientSide) {
             FiwToolsBridge.onBossPhaseChange(boss, boss.getBossId(), newIndex + 1, previousIndex + 1);
@@ -245,7 +245,8 @@ public class BossPhaseManager {
         }
 
         // The Mega form gets a dedicated glacial burst before applyEffective swaps its disguise.
-        if (phase.renderEntity != null && phase.renderEntity.contains("form=mega")) {
+        if (phase.renderEntity != null && (phase.renderEntity.contains("mega_evolution=mega")
+                || phase.renderEntity.contains("aspects=mega") || phase.renderEntity.contains("form=mega"))) {
             level.playSound(null, boss.getX(), boss.getY(), boss.getZ(),
                     SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 2.2f, 0.55f);
             level.sendParticles(ParticleTypes.SNOWFLAKE,
@@ -294,7 +295,7 @@ public class BossPhaseManager {
         activeRage = name;
         activeRageJson = json;
         if (currentPhaseIndex < 0) return;
-        applyEffective();
+        applyEffective(false);
         if (playEffects && !boss.level().isClientSide()) {
             playTransitionEffects(PhaseOverlay.merge(null, json));
         }
@@ -307,7 +308,7 @@ public class BossPhaseManager {
         activeRage = null;
         activeRageJson = null;
         if (currentPhaseIndex < 0) return;
-        applyEffective();
+        applyEffective(false);
         if (rageGear && phases.get(currentPhaseIndex).equipment == null) {
             // Put back the gear the boss wore before the rage: the latest HP phase that set
             // equipment, else the boss's base equipment.
@@ -326,10 +327,10 @@ public class BossPhaseManager {
 
     /** Rebuilds goals/modifiers/equipment for the phase in effect (after load). */
     public void refresh() {
-        if (currentPhaseIndex >= 0) applyEffective();
+        if (currentPhaseIndex >= 0) applyEffective(false);
     }
 
-    private void applyEffective() {
+    private void applyEffective(boolean animateMega) {
         PhaseDefinition hp = phases.get(currentPhaseIndex);
         effective = activeRageJson != null ? PhaseOverlay.merge(hp, activeRageJson) : null;
         PhaseDefinition phase = effective != null ? effective : hp;
@@ -348,6 +349,18 @@ public class BossPhaseManager {
                     ? definition.renderEntity
                     : definition != null ? definition.baseEntity : "custom";
         }
-        boss.setDisguiseEntity(disguise);
+        boolean megaDisguise = disguise.contains("mega_evolution=mega")
+                || disguise.contains("aspects=mega") || disguise.contains("form=mega");
+        if (animateMega && megaDisguise) {
+            String baseDisguise = definition != null && definition.renderEntity != null
+                    && !definition.renderEntity.isBlank()
+                    ? definition.renderEntity
+                    : definition != null ? definition.baseEntity : "custom";
+            boss.setDisguiseEntity(baseDisguise);
+            // Reveal the Mega model at the climax of the 90-tick animation.
+            boss.setDisguiseEntityAfterTicks(disguise, 66);
+        } else {
+            boss.setDisguiseEntity(disguise);
+        }
     }
 }
