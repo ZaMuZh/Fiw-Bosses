@@ -200,6 +200,25 @@ final class DisguiseRenderHelper {
         fake.setYRot(source.getYRot());
         fake.setXRot(source.getXRot());
         fake.setYHeadRot(source.getYHeadRot());
+
+        // Full-body anticipation -> strike -> recovery cue for Pokémon disguises.
+        // This deliberately animates the actual Cobblemon entity instance rather than
+        // scaling the boss or relying only on particles.
+        int animationTicks = source.getAttackAnimationTicks();
+        if (animationTicks > 0) {
+            float progress = 1.0f - animationTicks / 28.0f;
+            float lean;
+            if (progress < 0.34f) {
+                lean = -0.18f * (progress / 0.34f);          // pull back / anticipation
+            } else if (progress < 0.52f) {
+                lean = -0.18f + 0.48f * ((progress - 0.34f) / 0.18f); // lunge / strike
+            } else {
+                lean = 0.30f * (1.0f - (progress - 0.52f) / 0.48f);   // recovery
+            }
+            float sweep = (float) Math.sin(progress * Math.PI) * 7.0f;
+            fake.setXRot(source.getXRot() + lean * 57.29578f);
+            fake.setYRot(source.getYRot() + sweep);
+        }
         fake.tickCount = source.tickCount;
         fake.setCustomName(source.getCustomName());
         fake.setCustomNameVisible(source.isCustomNameVisible());
