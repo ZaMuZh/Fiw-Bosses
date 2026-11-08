@@ -72,7 +72,10 @@ public final class ConfigValidator {
         } else {
             for (int i = 0; i < def.phases.size(); i++) {
                 PhaseDefinition p = def.phases.get(i);
-                if (p != null) checkAbilities(file, "phases[" + i + "].abilities", p.abilities, issues);
+                if (p != null) {
+                    checkAbilities(file, "phases[" + i + "].abilities", p.abilities, issues);
+                    checkEntityId(file, "phases[" + i + "].renderEntity", p.renderEntity, issues);
+                }
             }
         }
         if (def.rages != null) {
