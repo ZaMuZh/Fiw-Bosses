@@ -106,10 +106,11 @@ class ExampleConfigsTest {
         // The icicle attack must remain present and bounded in every late-game phase.
         int[] expectedIcicles = {20, 26, 32};
         for (int phaseIndex = 1; phaseIndex < boss.phases.size(); phaseIndex++) {
-            var icicleRain = boss.phases.get(phaseIndex).abilities.stream()
+            final int checkedPhase = phaseIndex;
+            var icicleRain = boss.phases.get(checkedPhase).abilities.stream()
                     .filter(a -> "icicle_rain".equals(a.type))
                     .findFirst()
-                    .orElseThrow(() -> new AssertionError("phase " + phaseIndex + " has no icicle rain"));
+                    .orElseThrow(() -> new AssertionError("phase " + checkedPhase + " has no icicle rain"));
             assertEquals(expectedIcicles[phaseIndex - 1],
                     icicleRain.params.get("icicleCount").getAsInt());
             assertTrue(icicleRain.params.get("warnTicks").getAsInt() >= 20,
