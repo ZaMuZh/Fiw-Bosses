@@ -51,6 +51,31 @@
             "damage": 9,
             "taunt": "&b¡GARRAS DE HIELO!"
           }
+        },
+        {
+          "type": "ground_spike",
+          "cooldownTicks": 118,
+          "params": {
+            "radius": 10,
+            "spikeCount": 10,
+            "damage": 9,
+            "knockback": 1.5,
+            "markTicks": 32,
+            "spikeTicks": 20
+          }
+        },
+        {
+          "type": "ice_crystal",
+          "cooldownTicks": 145,
+          "params": {
+            "radius": 10,
+            "centerRadius": 3,
+            "damage": 9,
+            "slowDuration": 60,
+            "freezeDuration": 20,
+            "windupTicks": 24,
+            "duration": 90
+          }
         }
       ],
       "shield": {
@@ -295,7 +320,7 @@
         "brokenMessage": "&b&l¡EL ESCUDO FINAL SE HA ROTO! ¡ACABAD CON ABOMASNOW!",
         "blockedMessage": "&7La última barrera resiste. Quedan {left} Snover."
       },
-      "renderEntity": "cobblemon:pokemon:abomasnow aspects=mega"
+      "renderEntity": "cobblemon:pokemon:abomasnow mega_evolution=mega"
     }
   ],
   "loot": [
