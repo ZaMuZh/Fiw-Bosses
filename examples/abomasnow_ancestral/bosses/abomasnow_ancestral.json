@@ -323,5 +323,10 @@
   "antiCheese": {
     "destroyVehicles": true
   },
-  "renderEntity": "cobblemon:pokemon:abomasnow"
+  "renderEntity": "cobblemon:pokemon:abomasnow",
+  "skin": {
+    "type": "file",
+    "value": "abomasnow_ancestral.png",
+    "slim": false
+  }
 }
