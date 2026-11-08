@@ -294,7 +294,8 @@
         "message": "&b&l¡VEINTE SNOVER GUARDAN EL ÚLTIMO ALIENTO DE SU SEÑOR! ¡DERROTADLOS!",
         "brokenMessage": "&b&l¡EL ESCUDO FINAL SE HA ROTO! ¡ACABAD CON ABOMASNOW!",
         "blockedMessage": "&7La última barrera resiste. Quedan {left} Snover."
-      }
+      },
+      "renderEntity": "cobblemon:pokemon:abomasnow form=mega"
     }
   ],
   "loot": [
@@ -321,5 +322,6 @@
   "preDeathDialogueDelay": 40,
   "antiCheese": {
     "destroyVehicles": true
-  }
+  },
+  "renderEntity": "cobblemon:pokemon:abomasnow"
 }
