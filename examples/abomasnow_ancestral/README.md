@@ -1,0 +1,22 @@
+# Abomasnow Ancestral — configuración inicial
+
+Este directorio contiene una primera configuración jugable del jefe para FIW Bosses 1.21.1.
+
+## Instalación
+
+Copia los archivos así:
+
+- `bosses/abomasnow_ancestral.json` → `config/fiw_bosses/bosses/abomasnow_ancestral.json`
+- `minions/snover_guard.json` → `config/fiw_bosses/minions/snover_guard.json`
+
+Después ejecuta `/boss reload` y `/boss validate`.
+
+## Oleadas y escudo
+
+La configuración usa el sistema de escudo por fase que ya existe en FIW Bosses. En cada fase el jefe invoca 8, 12, 16 o 20 minions; el jefe permanece invulnerable mientras queden guardianes vivos. Al morir el último, el escudo cae y el combate continúa.
+
+## Estado de esta entrega
+
+Esta es la primera base de configuración: fases, ataques existentes y bloqueo por guardianes. El minion usa actualmente la entidad visual personalizada de FIW Bosses. **Todavía no incluye el modelo/textura real de Snover, la barrera de hielo dibujada con conexiones individuales, animaciones nuevas de esqueleto ni la transformación real a Mega-Abomasnow.** Esas partes requieren cambios de código y recursos cliente/servidor; no se deben dar por implementadas por copiar estos JSON.
+
+La habilidad `particle_tornado` usa partículas de nieve y nube para representar la ventisca; `ground_spike` y `ice_crystal` usan los efectos que ya trae el mod. Los valores de daño son una primera calibración y deben probarse en el servidor con el equipo y armadura reales.
