@@ -1413,9 +1413,12 @@ public class BossEntity extends Monster {
      * uses this state to animate the displayed Pokémon model, while swing() keeps
      * the normal held-item animation for non-disguised bosses.
      */
-    public void playAttackAnimation() {
-        entityData.set(DATA_ATTACK_ANIMATION, 1);
-        entityData.set(DATA_ATTACK_ANIMATION_TICKS, 28);
+    public void playAttackAnimation() { playAttackAnimation(1); }
+
+    /** Starts a named attack motion: 1 slash, 2 heavy smash, 3 ground slam, 4 ranged cast, 5 charge. */
+    public void playAttackAnimation(int animation) {
+        entityData.set(DATA_ATTACK_ANIMATION, Math.max(1, Math.min(5, animation)));
+        entityData.set(DATA_ATTACK_ANIMATION_TICKS, animation == 2 || animation == 3 ? 34 : 28);
         swing(InteractionHand.MAIN_HAND);
     }
 
