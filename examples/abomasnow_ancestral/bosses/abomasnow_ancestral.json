@@ -1,16 +1,16 @@
 {
   "id": "abomasnow_ancestral",
   "displayName": "&b&lABOMASNOW ANCESTRAL",
-  "health": 800.0,
-  "armor": 12.0,
+  "health": 800,
+  "armor": 12,
   "speed": 0.24,
-  "knockbackResistance": 1.0,
-  "attackDamage": 4.0,
+  "knockbackResistance": 1,
+  "attackDamage": 4,
   "movement": "side",
   "faction": "abomasnow_glacier",
   "baseEntity": "custom",
   "scale": 2.5,
-  "reach": 0.0,
+  "reach": 0,
   "bossBar": {
     "color": "BLUE",
     "overlay": "NOTCHED_10",
@@ -18,16 +18,16 @@
   },
   "phases": [
     {
-      "hpThresholdPercent": 1.0,
-      "speedMultiplier": 1.0,
-      "damageMultiplier": 1.0,
+      "hpThresholdPercent": 1,
+      "speedMultiplier": 1,
+      "damageMultiplier": 1,
       "abilities": [
         {
           "type": "aoe_smash",
           "cooldownTicks": 90,
           "params": {
-            "radius": 7.0,
-            "damage": 7.0,
+            "radius": 7,
+            "damage": 7,
             "knockback": 1.8,
             "taunt": "&b¡ABOMASNOW GOLPEA EL GLACIAR!"
           }
@@ -37,8 +37,8 @@
           "cooldownTicks": 100,
           "params": {
             "speed": 1.35,
-            "damage": 7.0,
-            "distance": 10.0,
+            "damage": 7,
+            "distance": 10,
             "taunt": "&b¡CARGA GLACIAL!"
           }
         },
@@ -46,9 +46,9 @@
           "type": "melee_slash",
           "cooldownTicks": 65,
           "params": {
-            "range": 6.0,
-            "arc": 135.0,
-            "damage": 6.0,
+            "range": 6,
+            "arc": 135,
+            "damage": 6,
             "taunt": "&b¡GARRAS DE HIELO!"
           }
         }
@@ -56,7 +56,7 @@
       "shield": {
         "minion": "snover_guard",
         "count": 8,
-        "radius": 11.0,
+        "radius": 11,
         "message": "&b¡Los guardianes del glaciar protegen a su señor! ¡Derrotad a los Snover!",
         "brokenMessage": "&b¡La protección ancestral se ha debilitado! ¡Atacad a Abomasnow!",
         "blockedMessage": "&7El escudo glaciar absorbe el golpe. Quedan {left} guardianes."
@@ -65,7 +65,7 @@
     {
       "hpThresholdPercent": 0.75,
       "speedMultiplier": 1.12,
-      "damageMultiplier": 1.0,
+      "damageMultiplier": 1,
       "transitionMessage": "&b&l¡EL SEÑOR DE LA VENTISCA DESPIERTA!",
       "transitionSound": "minecraft:entity.ravager.roar",
       "transitionParticle": "minecraft:snowflake",
@@ -74,13 +74,13 @@
           "type": "particle_tornado",
           "cooldownTicks": 180,
           "params": {
-            "maxRadius": 8.0,
-            "height": 12.0,
+            "maxRadius": 8,
+            "height": 12,
             "duration": 100,
-            "rotationSpeed": 13.0,
-            "twist": 25.0,
+            "rotationSpeed": 13,
+            "twist": 25,
             "disks": 18,
-            "damage": 1.0,
+            "damage": 1,
             "particle": "minecraft:snowflake",
             "accentParticle": "minecraft:cloud",
             "taunt": "&b&l¡TORMENTA DE VENTISCA!"
@@ -90,9 +90,9 @@
           "type": "ground_spike",
           "cooldownTicks": 145,
           "params": {
-            "radius": 13.0,
+            "radius": 13,
             "spikeCount": 14,
-            "damage": 7.0,
+            "damage": 7,
             "knockback": 1.7,
             "markTicks": 35,
             "spikeTicks": 22
@@ -102,20 +102,32 @@
           "type": "ice_crystal",
           "cooldownTicks": 190,
           "params": {
-            "radius": 12.0,
-            "centerRadius": 4.0,
-            "damage": 6.0,
+            "radius": 12,
+            "centerRadius": 4,
+            "damage": 6,
             "slowDuration": 70,
             "freezeDuration": 28,
             "windupTicks": 24,
             "duration": 100
+          }
+        },
+        {
+          "type": "icicle_rain",
+          "cooldownTicks": 165,
+          "params": {
+            "radius": 12,
+            "height": 22,
+            "icicleCount": 20,
+            "damage": 6,
+            "warnTicks": 32,
+            "rainTicks": 28
           }
         }
       ],
       "shield": {
         "minion": "snover_guard",
         "count": 12,
-        "radius": 13.0,
+        "radius": 13,
         "message": "&b¡Los guardianes del glaciar vuelven a proteger a su señor! ¡Derrotad a los Snover!",
         "brokenMessage": "&b¡La barrera de hielo se ha hecho añicos! ¡Atacad!",
         "blockedMessage": "&7La ventisca protege a Abomasnow. Quedan {left} Snover."
@@ -124,7 +136,7 @@
     {
       "hpThresholdPercent": 0.5,
       "speedMultiplier": 1.25,
-      "damageMultiplier": 1.0,
+      "damageMultiplier": 1,
       "transitionMessage": "&3&l¡EL PODER ANCESTRAL SE DESATA!",
       "transitionSound": "minecraft:entity.warden.roar",
       "transitionParticle": "minecraft:explosion",
@@ -133,11 +145,11 @@
           "type": "slam",
           "cooldownTicks": 115,
           "params": {
-            "radius": 9.0,
-            "damage": 9.0,
+            "radius": 9,
+            "damage": 9,
             "knockback": 2.2,
             "windupTicks": 24,
-            "teleportRange": 7.0,
+            "teleportRange": 7,
             "taunt": "&3¡IMPACTO DEL GLACIAR!"
           }
         },
@@ -145,13 +157,13 @@
           "type": "particle_tornado",
           "cooldownTicks": 160,
           "params": {
-            "maxRadius": 10.0,
-            "height": 14.0,
+            "maxRadius": 10,
+            "height": 14,
             "duration": 120,
-            "rotationSpeed": 16.0,
-            "twist": 28.0,
+            "rotationSpeed": 16,
+            "twist": 28,
             "disks": 20,
-            "damage": 1.0,
+            "damage": 1,
             "particle": "minecraft:snowflake",
             "accentParticle": "minecraft:cloud",
             "taunt": "&3&l¡VENTISCA ANCESTRAL!"
@@ -161,10 +173,10 @@
           "type": "ground_spike",
           "cooldownTicks": 125,
           "params": {
-            "radius": 16.0,
+            "radius": 16,
             "spikeCount": 18,
-            "damage": 8.0,
-            "knockback": 2.0,
+            "damage": 8,
+            "knockback": 2,
             "markTicks": 40,
             "spikeTicks": 25
           }
@@ -175,15 +187,27 @@
           "params": {
             "duration": 55,
             "intensity": 120,
-            "radius": 12.0,
+            "radius": 12,
             "taunt": "&3¡EL FRÍO OS CONGELARÁ!"
+          }
+        },
+        {
+          "type": "icicle_rain",
+          "cooldownTicks": 145,
+          "params": {
+            "radius": 15,
+            "height": 24,
+            "icicleCount": 26,
+            "damage": 7,
+            "warnTicks": 30,
+            "rainTicks": 26
           }
         }
       ],
       "shield": {
         "minion": "snover_guard",
         "count": 16,
-        "radius": 15.0,
+        "radius": 15,
         "message": "&3¡Los últimos guardianes ancestrales protegen a su señor! ¡Acabad con ellos!",
         "brokenMessage": "&3¡La protección ancestral ha caído! ¡Atacad a Abomasnow!",
         "blockedMessage": "&7El escudo ancestral resiste. Quedan {left} guardianes."
@@ -192,7 +216,7 @@
     {
       "hpThresholdPercent": 0.25,
       "speedMultiplier": 1.4,
-      "damageMultiplier": 1.0,
+      "damageMultiplier": 1,
       "transitionMessage": "&b&l¡CATACLISMO GLACIAL! ¡ABOMASNOW DESATA SU FORMA FINAL!",
       "transitionSound": "minecraft:entity.ender_dragon.growl",
       "transitionParticle": "minecraft:explosion",
@@ -201,11 +225,11 @@
           "type": "slam",
           "cooldownTicks": 95,
           "params": {
-            "radius": 11.0,
-            "damage": 10.0,
+            "radius": 11,
+            "damage": 10,
             "knockback": 2.5,
             "windupTicks": 28,
-            "teleportRange": 8.0,
+            "teleportRange": 8,
             "taunt": "&b&l¡CATACLISMO GLACIAL!"
           }
         },
@@ -213,13 +237,13 @@
           "type": "particle_tornado",
           "cooldownTicks": 145,
           "params": {
-            "maxRadius": 12.0,
-            "height": 16.0,
+            "maxRadius": 12,
+            "height": 16,
             "duration": 140,
-            "rotationSpeed": 18.0,
-            "twist": 32.0,
+            "rotationSpeed": 18,
+            "twist": 32,
             "disks": 22,
-            "damage": 1.0,
+            "damage": 1,
             "particle": "minecraft:snowflake",
             "accentParticle": "minecraft:cloud",
             "taunt": "&b&l¡LA VENTISCA FINAL!"
@@ -229,9 +253,9 @@
           "type": "ground_spike",
           "cooldownTicks": 110,
           "params": {
-            "radius": 19.0,
+            "radius": 19,
             "spikeCount": 22,
-            "damage": 9.0,
+            "damage": 9,
             "knockback": 2.2,
             "markTicks": 45,
             "spikeTicks": 28
@@ -241,20 +265,32 @@
           "type": "ice_crystal",
           "cooldownTicks": 155,
           "params": {
-            "radius": 15.0,
-            "centerRadius": 5.0,
-            "damage": 8.0,
+            "radius": 15,
+            "centerRadius": 5,
+            "damage": 8,
             "slowDuration": 80,
             "freezeDuration": 35,
             "windupTicks": 28,
             "duration": 120
+          }
+        },
+        {
+          "type": "icicle_rain",
+          "cooldownTicks": 125,
+          "params": {
+            "radius": 18,
+            "height": 26,
+            "icicleCount": 32,
+            "damage": 8,
+            "warnTicks": 28,
+            "rainTicks": 24
           }
         }
       ],
       "shield": {
         "minion": "snover_guard",
         "count": 20,
-        "radius": 17.0,
+        "radius": 17,
         "message": "&b&l¡VEINTE SNOVER GUARDAN EL ÚLTIMO ALIENTO DE SU SEÑOR! ¡DERROTADLOS!",
         "brokenMessage": "&b&l¡EL ESCUDO FINAL SE HA ROTO! ¡ACABAD CON ABOMASNOW!",
         "blockedMessage": "&7La última barrera resiste. Quedan {left} Snover."
@@ -265,7 +301,7 @@
     {
       "item": "minecraft:diamond",
       "count": 5,
-      "chance": 1.0,
+      "chance": 1,
       "unique": false,
       "topRanks": 0
     }
@@ -275,7 +311,7 @@
   "damageOwnGroup": false,
   "idleTimeout": -1,
   "idleAction": "despawn",
-  "idleHealAmount": 2.0,
+  "idleHealAmount": 2,
   "idleHealInterval": 40,
   "preFightDialogue": [],
   "dialogueLineDelay": 60,
