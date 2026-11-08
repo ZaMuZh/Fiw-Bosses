@@ -214,7 +214,7 @@ public class BossPhaseManager {
     private void playTransitionEffects(PhaseDefinition phase) {
         ServerLevel level = (ServerLevel) boss.level();
         // Give every phase change a visible body cue, not just a chat line and particles.
-        boss.playAttackAnimation(6);
+        boolean megaEvolution = phase.renderEntity != null\n                && (phase.renderEntity.contains("aspects=mega") || phase.renderEntity.contains("form=mega"));\n        boss.playAttackAnimation(megaEvolution ? 7 : 6);
 
         if (phase.transitionMessage != null && !phase.transitionMessage.isEmpty()) {
             Component message = TextUtil.parseColorCodes(phase.transitionMessage);
