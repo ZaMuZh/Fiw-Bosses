@@ -622,6 +622,9 @@ public class BossEntity extends Monster {
     @Override
     public void checkDespawn() { /* bosses never auto-despawn */ }
 
+    /** Whether this entity should drop the configured boss loot table on death. */
+    protected boolean dropsBossLoot() { return true; }
+
     @Override
     public void die(DamageSource damageSource) {
         if (pendingHitter != null) {
@@ -629,7 +632,7 @@ public class BossEntity extends Monster {
             pendingHitter = null;
         }
         super.die(damageSource);
-        if (!level().isClientSide() && definition != null) {
+        if (!level().isClientSide() && definition != null && dropsBossLoot()) {
             if (tracksFight()) BossFightHandler.onBossDeath(this, damageSource);
             else BossLootHandler.dropLoot(this, definition);
         }
