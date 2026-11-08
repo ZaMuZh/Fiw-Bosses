@@ -98,7 +98,7 @@ class ExampleConfigsTest {
         assertEquals(12, boss.phases.get(1).shield.count);
         assertEquals(16, boss.phases.get(2).shield.count);
         assertEquals(20, boss.phases.get(3).shield.count);
-        assertEquals("cobblemon:pokemon:abomasnow form=mega", boss.phases.get(3).renderEntity);
+        assertEquals("cobblemon:pokemon:abomasnow aspects=mega", boss.phases.get(3).renderEntity);
         assertEquals("cobblemon:pokemon:snover", minion.renderEntity);
         assertTrue(minion.abilities.stream().anyMatch(a -> "melee_slash".equals(a.type)),
                 "Snover guardians must have an actual attack");
