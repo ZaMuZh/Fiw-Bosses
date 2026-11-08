@@ -107,7 +107,8 @@ final class DisguiseRenderHelper {
                     attackLean = -18.0f * anticipation + 10.0f * strike - 5.0f * recovery;
                     attackTwist = (float) Math.sin(progress * Math.PI * 5.0f) * (3.0f + 5.0f * pulse);
                     bob += pulse * 0.28f + surge * 0.06f;
-                }\n                case 6 -> { // Phase awakening: rise, hold the glacial energy, then release.
+                }
+                case 6 -> { // Phase awakening: rise, hold the glacial energy, then release.
                     float pulse = (float) Math.sin(progress * Math.PI);
                     attackLean = -10.0f * anticipation + 7.0f * strike - 4.0f * recovery;
                     attackTwist = (float) Math.sin(progress * Math.PI * 2.0) * 3.0f;
