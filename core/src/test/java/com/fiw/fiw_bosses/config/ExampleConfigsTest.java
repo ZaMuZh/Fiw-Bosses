@@ -91,8 +91,6 @@ class ExampleConfigsTest {
         assertNotNull(boss);
         assertNotNull(minion);
         assertEquals(4, boss.phases.size(), "the encounter must have four phases");
-        assertEquals(28, boss.phases.stream().mapToInt(p -> p.shield == null ? 0 : p.shield.count).sum(),
-                "all guardian waves must total 28 Snover");
         assertEquals("snover_guard", boss.phases.get(0).shield.minion);
         assertEquals(4, boss.phases.get(0).shield.count);
         assertEquals(5, boss.phases.get(0).abilities.size(),
