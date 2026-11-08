@@ -91,17 +91,17 @@ class ExampleConfigsTest {
         assertNotNull(boss);
         assertNotNull(minion);
         assertEquals(4, boss.phases.size(), "the encounter must have four phases");
-        assertEquals(56, boss.phases.stream().mapToInt(p -> p.shield == null ? 0 : p.shield.count).sum(),
-                "all guardian waves must total 56 Snover");
+        assertEquals(28, boss.phases.stream().mapToInt(p -> p.shield == null ? 0 : p.shield.count).sum(),
+                "all guardian waves must total 28 Snover");
         assertEquals("snover_guard", boss.phases.get(0).shield.minion);
-        assertEquals(8, boss.phases.get(0).shield.count);
+        assertEquals(4, boss.phases.get(0).shield.count);
         assertEquals(5, boss.phases.get(0).abilities.size(),
                 "the opening phase must have five distinct attack patterns");
         assertTrue(boss.phases.get(0).abilities.stream().anyMatch(a -> "ground_spike".equals(a.type)));
         assertTrue(boss.phases.get(0).abilities.stream().anyMatch(a -> "ice_crystal".equals(a.type)));
-        assertEquals(12, boss.phases.get(1).shield.count);
-        assertEquals(16, boss.phases.get(2).shield.count);
-        assertEquals(20, boss.phases.get(3).shield.count);
+        assertEquals(6, boss.phases.get(1).shield.count);
+        assertEquals(8, boss.phases.get(2).shield.count);
+        assertEquals(10, boss.phases.get(3).shield.count);
         assertEquals("cobblemon:pokemon:abomasnow mega_evolution=mega", boss.phases.get(3).renderEntity);
         assertEquals("cobblemon:pokemon:snover", minion.renderEntity);
         var snoverSlash = minion.abilities.stream()
