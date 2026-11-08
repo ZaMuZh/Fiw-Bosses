@@ -49,7 +49,7 @@ public class MeleeSlashAttackGoal extends Goal {
 
     @Override
     public void start() {
-        boss.playAttackAnimation();
+        boss.playAttackAnimation(1);
         attackTick = 0;
         LivingEntity target = boss.getTarget();
         if (target != null) {
