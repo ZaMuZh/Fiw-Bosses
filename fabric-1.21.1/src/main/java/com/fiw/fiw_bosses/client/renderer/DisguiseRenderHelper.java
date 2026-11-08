@@ -201,6 +201,26 @@ final class DisguiseRenderHelper {
                 return null;
             }
 
+            // Cobblemon does not parse forced aspects as ordinary PokemonProperties.
+            // Use Pokemon.forcedAspects so updateAspects() recalculates the form and
+            // the Cobblemon renderer resolves Mega-Abomasnow's own model and texture.
+            if (propertiesText.contains("mega_evolution=mega")) {
+                Method forcedAspectsSetter = null;
+                for (Method method : pokemon.getClass().getMethods()) {
+                    if (method.getName().equals("setForcedAspects")
+                            && method.getParameterCount() == 1
+                            && java.util.Set.class.isAssignableFrom(method.getParameterTypes()[0])) {
+                        forcedAspectsSetter = method;
+                        break;
+                    }
+                }
+                if (forcedAspectsSetter == null) {
+                    System.err.println("[FIW Bosses] Cobblemon no expone Pokemon.setForcedAspects(Set); no se pudo activar la forma Mega.");
+                    return null;
+                }
+                forcedAspectsSetter.invoke(pokemon, java.util.Set.of("mega_evolution=mega"));
+            }
+
             Class<?> pokemonEntityClass = Class.forName(
                     "com.cobblemon.mod.common.entity.pokemon.PokemonEntity"
             );
@@ -255,13 +275,6 @@ final class DisguiseRenderHelper {
     private static Entity createFake(BossEntity source, String disguiseId) {
         if (disguiseId.startsWith("cobblemon:pokemon:")) {
             String pokemonProperties = disguiseId.substring("cobblemon:pokemon:".length());
-            // Mega Showdown exposes Mega forms as Cobblemon aspects, not standalone
-            // PokemonProperties keys. Accept the concise boss-config syntax while
-            // converting it to the canonical `aspects=...` property before parsing.
-            pokemonProperties = pokemonProperties.replaceAll(
-                    "(?<![\\w])mega_evolution=mega(?![\\w])",
-                    "aspects=mega_evolution=mega"
-            );
             if (!pokemonProperties.contains("level=")) pokemonProperties += " level=50";
             if (!pokemonProperties.startsWith("species=")) pokemonProperties = "species=" + pokemonProperties;
             return createCobblemonDisguise(source, pokemonProperties);
