@@ -105,7 +105,7 @@ public class IcicleRainGoal extends Goal {
 
     @Override
     public void tick() {
-        if (!active || boss.level().isClientSide) return;
+        if (!active || boss.level().isClientSide()) return;
         ServerLevel level = (ServerLevel) boss.level();
         age++;
 
@@ -157,8 +157,8 @@ public class IcicleRainGoal extends Goal {
         BlockPos spawnPos = new BlockPos(x, point.groundY + Math.max(8, height), z);
         // Never replace an arena/build block to create a projectile, and keep the
         // temporary entity inside the dimension's build limits.
-        if (spawnPos.getY() < level.getMinBuildHeight()
-                || spawnPos.getY() >= level.getMaxBuildHeight()
+        if (spawnPos.getY() < level.getMinY()
+                || spawnPos.getY() >= level.getMaxY()
                 || !level.isEmptyBlock(spawnPos)) {
             return;
         }
@@ -258,7 +258,7 @@ public class IcicleRainGoal extends Goal {
         // The projectiles are temporary attack entities. Remove airborne ones on
         // interruption, but never clear blocks at their landing coordinates: those
         // coordinates may have been modified by players during the warning/volley.
-        if (!boss.level().isClientSide) {
+        if (!boss.level().isClientSide()) {
             for (ActiveIcicle icicle : falling) {
                 if (!icicle.entity.isRemoved()) icicle.entity.discard();
             }
