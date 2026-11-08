@@ -310,5 +310,16 @@ public class BossPhaseManager {
         if (phase.equipment != null) {
             boss.applyEquipment(phase.equipment);
         }
+
+        // A phase can override the boss's visual disguise (for example, Mega Abomasnow).
+        // Empty phase values restore the disguise configured on the boss definition.
+        BossDefinition definition = boss.getDefinition();
+        String disguise = phase.renderEntity;
+        if (disguise == null || disguise.isBlank()) {
+            disguise = definition != null && definition.renderEntity != null && !definition.renderEntity.isBlank()
+                    ? definition.renderEntity
+                    : definition != null ? definition.baseEntity : "custom";
+        }
+        boss.setDisguiseEntity(disguise);
     }
 }
