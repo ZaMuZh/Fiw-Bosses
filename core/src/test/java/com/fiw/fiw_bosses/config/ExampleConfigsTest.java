@@ -117,7 +117,7 @@ class ExampleConfigsTest {
         assertEquals(3.2f, finalStorm.params.get("damage").getAsFloat(), 0.001f,
                 "the final blizzard must deal damage, not only show particles");
 
-        Path megaAssignment = examples().getParent().resolve("common-1.21.1/src/main/resources/data/cobblemon/species_feature_assignments/fiw_bosses_abomasnow_mega.json");
+        Path megaAssignment = examples().getParent().resolve("common-1.21.1/src/main/resources/data/cobblemon/species_feature_assignments/mega_evolution.json");
         String megaAssignmentJson = Files.readString(megaAssignment, StandardCharsets.UTF_8);
         assertTrue(megaAssignmentJson.contains("\"abomasnow\""));
         assertTrue(megaAssignmentJson.contains("\"mega_evolution\""),
