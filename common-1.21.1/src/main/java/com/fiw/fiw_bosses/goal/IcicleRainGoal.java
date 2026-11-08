@@ -192,7 +192,7 @@ public class IcicleRainGoal extends Goal {
                 point.x, point.groundY + 0.5, point.z,
                 18, 0.65, 0.3, 0.65, 0.12);
         level.playSound(null, point.x, point.groundY, point.z,
-                SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.85f, 1.35f);
+                SoundEvents.SHIELD_BREAK, SoundSource.HOSTILE, 0.85f, 1.35f);
 
         AABB hitBox = new AABB(
                 point.x - 1.65, point.groundY - 0.5, point.z - 1.65,
