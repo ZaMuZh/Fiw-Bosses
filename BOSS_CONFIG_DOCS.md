@@ -101,6 +101,7 @@ Bosses are defined as `.json` files — no coding or server restart needed.
   - [`tracking_orb`](#tracking_orb)
   - [`moving_tornado`](#moving_tornado)
   - [`ground_spike`](#ground_spike)
+  - [`icicle_rain`](#icicle_rain)
   - [`arrow_rain`](#arrow_rain)
   - [`potion_field`](#potion_field)
   - [`detect_mark`](#detect_mark)
@@ -1403,6 +1404,34 @@ A tornado appears in front of the boss and advances toward the target for a fixe
 ```
 
 ---
+
+### `icicle_rain`
+
+A targeted ice bombardment. The boss first marks every impact point with a pulsing ring, then sends real falling ice blocks down from above. Each impact bursts into ice fragments and damages entities caught near the marked point.
+
+| Param | Default | Description |
+|-------|---------|-------------|
+| `radius` | 10.0 | Spread radius around the target |
+| `height` | 20 | Height above the ground from which each icicle falls |
+| `icicleCount` | 18 | Number of falling icicles |
+| `damage` | 8.0 | Damage dealt near each impact |
+| `warnTicks` | 30 | Warning-mark duration before the rain starts |
+| `rainTicks` | 25 | Time window over which the icicles are released |
+
+```json
+{
+  "type": "icicle_rain",
+  "cooldownTicks": 160,
+  "params": {
+    "radius": 12.0,
+    "height": 22,
+    "icicleCount": 20,
+    "damage": 6.0,
+    "warnTicks": 32,
+    "rainTicks": 28
+  }
+}
+```
 
 ### `ground_spike`
 
