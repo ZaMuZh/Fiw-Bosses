@@ -6,7 +6,7 @@
   "armor": 3,
   "speed": 0.32,
   "knockbackResistance": 0.15,
-  "attackDamage": 6,
+  "attackDamage": 9,
   "movement": "normal",
   "scale": 1,
   "skin": {
@@ -23,11 +23,11 @@
   "abilities": [
     {
       "type": "melee_slash",
-      "cooldownTicks": 36,
+      "cooldownTicks": 30,
       "params": {
-        "range": 4.4,
-        "arc": 155,
-        "damage": 7
+        "range": 4.8,
+        "arc": 170,
+        "damage": 12
       }
     }
   ],
