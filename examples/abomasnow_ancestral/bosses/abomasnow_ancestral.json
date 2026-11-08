@@ -7,6 +7,7 @@
   "knockbackResistance": 1.0,
   "attackDamage": 4.0,
   "movement": "side",
+  "faction": "abomasnow_glacier",
   "baseEntity": "custom",
   "scale": 2.5,
   "reach": 0.0,
@@ -254,7 +255,7 @@
         "minion": "snover_guard",
         "count": 20,
         "radius": 17.0,
-        "message": "&b&l¡VEINTE SNO﻿VER GUARDAN EL ÚLTIMO ALIENTO DE SU SEÑOR! ¡DERROTADLOS!",
+        "message": "&b&l¡VEINTE SNOVER GUARDAN EL ÚLTIMO ALIENTO DE SU SEÑOR! ¡DERROTADLOS!",
         "brokenMessage": "&b&l¡EL ESCUDO FINAL SE HA ROTO! ¡ACABAD CON ABOMASNOW!",
         "blockedMessage": "&7La última barrera resiste. Quedan {left} Snover."
       }
