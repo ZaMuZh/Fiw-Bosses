@@ -1433,8 +1433,8 @@ public class BossEntity extends Monster {
 
     /** Starts a named motion: 1 slash, 2 heavy smash, 3 ground slam, 4 ranged cast, 5 charge, 6 phase awakening. */
     public void playAttackAnimation(int animation) {
-        entityData.set(DATA_ATTACK_ANIMATION, Math.max(1, Math.min(6, animation)));
-        entityData.set(DATA_ATTACK_ANIMATION_TICKS, animation == 6 ? 50 : (animation == 2 || animation == 3 ? 34 : 28));
+        entityData.set(DATA_ATTACK_ANIMATION, Math.max(1, Math.min(7, animation)));
+        entityData.set(DATA_ATTACK_ANIMATION_TICKS, animation == 7 ? 90 : (animation == 6 ? 50 : (animation == 2 || animation == 3 ? 34 : 28)));
         swing(InteractionHand.MAIN_HAND);
     }
 
