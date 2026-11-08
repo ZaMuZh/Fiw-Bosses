@@ -65,7 +65,7 @@ public class IceCrystalGoal extends Goal {
 
     @Override
     public void start() {
-        boss.playAttackAnimation();
+        boss.playAttackAnimation(4);
         tick   = 0;
         state  = STATE_WINDUP;
         active = true;
