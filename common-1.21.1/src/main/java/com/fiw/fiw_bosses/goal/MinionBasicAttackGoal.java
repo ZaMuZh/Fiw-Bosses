@@ -8,10 +8,21 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+
 import java.util.EnumSet;
+import java.util.Comparator;
 
 public final class MinionBasicAttackGoal extends Goal {
+    private static final double ACQUIRE_RANGE = 20.0;
+    private static final double ATTACK_RANGE = 3.2;
+    // Minecraft health is measured in half-hearts: 3 HP = 1.5 hearts.
+    // Magic damage bypasses ordinary armor points, so full diamond does not
+    // reduce the requested per-hit damage.
+    private static final float SNOVER_HIT_DAMAGE = 3.0F;
+
     private final BossEntity minion;
     private final int cooldown;
     private int cooldownTicks;
@@ -22,34 +33,55 @@ public final class MinionBasicAttackGoal extends Goal {
         setFlags(EnumSet.of(Flag.MOVE, Flag.LOOK));
     }
 
+    private LivingEntity findTarget() {
+        LivingEntity current = minion.getTarget();
+        if (current != null && current.isAlive() && minion.canAbilityHit(current)) return current;
+
+        AABB searchBox = minion.getBoundingBox().inflate(ACQUIRE_RANGE);
+        Player nearest = minion.level().getEntitiesOfClass(Player.class, searchBox,
+                        p -> p.isAlive() && !p.isSpectator() && !p.isCreative()
+                                && minion.canAbilityHit(p))
+                .stream()
+                .min(Comparator.comparingDouble(minion::distanceToSqr))
+                .orElse(null);
+        if (nearest != null) minion.setTarget(nearest);
+        return nearest;
+    }
+
     @Override public boolean canUse() {
-        LivingEntity target = minion.getTarget();
-        return target != null && target.isAlive() && minion.canAbilityHit(target);
+        return findTarget() != null;
     }
 
     @Override public boolean canContinueToUse() {
-        LivingEntity target = minion.getTarget();
-        return target != null && target.isAlive() && minion.canAbilityHit(target);
+        LivingEntity target = findTarget();
+        return target != null && target.isAlive();
     }
 
     @Override public void tick() {
-        LivingEntity target = minion.getTarget();
+        LivingEntity target = findTarget();
         if (target == null || !target.isAlive()) return;
+
         minion.getLookControl().setLookAt(target, 30.0F, 30.0F);
-        if (minion.distanceToSqr(target) > 3.2 * 3.2) {
+        if (minion.distanceToSqr(target) > ATTACK_RANGE * ATTACK_RANGE) {
             minion.getNavigation().moveTo(target, 1.18);
             return;
         }
+
         minion.getNavigation().stop();
         if (cooldownTicks > 0) cooldownTicks--;
-        if (cooldownTicks <= 0) {
+        if (cooldownTicks <= 0 && minion.hasLineOfSight(target)
+                && minion.canAbilityHit(target)) {
             minion.swing(InteractionHand.MAIN_HAND);
             minion.playAttackAnimation(1);
-            float damage = (float) minion.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE);
-            minion.dealAbilityDamage(target, minion.damageSources().mobAttack(minion), damage);
+
+            // Fixed 3 HP (1.5 hearts) per successful strike, even through full
+            // diamond armor. The ordinary mobAttack source was armor-reduced.
+            target.hurt(minion.damageSources().magic(), SNOVER_HIT_DAMAGE);
+
             Vec3 away = target.position().subtract(minion.position()).normalize();
             target.push(away.x * 0.28, 0.18, away.z * 0.28);
             target.hurtMarked = true;
+
             if (minion.level() instanceof ServerLevel level) {
                 level.playSound(null, minion.getX(), minion.getY(), minion.getZ(),
                         SoundEvents.PLAYER_ATTACK_STRONG, SoundSource.HOSTILE, 0.8F, 0.75F);
