@@ -33,18 +33,21 @@ public final class MinionBasicAttackGoal extends Goal {
     }
 
     private LivingEntity findTarget() {
-        LivingEntity current = minion.getTarget();
-        if (current != null && current.isAlive() && minion.canAbilityHit(current)) return current;
+        // Snover are defensive: they only retaliate against the living player
+        // who most recently damaged this individual minion. They never scan
+        // for or initiate combat against nearby players on their own.
+        LivingEntity attacker = minion.getLastHurtByMob();
+        if (attacker instanceof Player player && player.isAlive()
+                && !player.isSpectator() && !player.isCreative()
+                && minion.canAbilityHit(player)) {
+            if (minion.getTarget() != player) minion.setTarget(player);
+            return player;
+        }
 
-        AABB searchBox = minion.getBoundingBox().inflate(ACQUIRE_RANGE);
-        Player nearest = minion.level().getEntitiesOfClass(Player.class, searchBox,
-                        p -> p.isAlive() && !p.isSpectator() && !p.isCreative()
-                                && minion.canAbilityHit(p))
-                .stream()
-                .min(Comparator.comparingDouble(minion::distanceToSqr))
-                .orElse(null);
-        if (nearest != null) minion.setTarget(nearest);
-        return nearest;
+        // Clear stale/passive targets so a Snover does not keep attacking
+        // someone after its retaliation target is no longer valid.
+        if (minion.getTarget() != null) minion.setTarget(null);
+        return null;
     }
 
     @Override public boolean canUse() {
