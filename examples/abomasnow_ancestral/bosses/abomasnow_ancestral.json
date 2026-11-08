@@ -268,7 +268,7 @@
             "rotationSpeed": 18,
             "twist": 32,
             "disks": 22,
-            "damage": 2.2,
+            "damage": 3.2,
             "particle": "minecraft:snowflake",
             "accentParticle": "minecraft:cloud",
             "taunt": "&b&l¡LA VENTISCA FINAL!"
