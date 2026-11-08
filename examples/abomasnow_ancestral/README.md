@@ -9,6 +9,7 @@ Copia los archivos así:
 - `bosses/abomasnow_ancestral.json` → `config/fiw_bosses/bosses/abomasnow_ancestral.json`
 - `minions/snover_guard.json` → `config/fiw_bosses/minions/snover_guard.json`
 - `skins/snover_guard.png` → `config/fiw_bosses/skins/snover_guard.png`
+- `skins/abomasnow_ancestral.png` → `config/fiw_bosses/skins/abomasnow_ancestral.png`
 
 Después ejecuta `/boss reload` y `/boss validate`.
 
