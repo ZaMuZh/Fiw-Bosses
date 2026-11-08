@@ -201,6 +201,21 @@ public class IcicleRainGoal extends Goal {
                 shatter(level, icicle.impact);
                 entity.discard();
                 iterator.remove();
+                continue;
+            }
+
+            // A roof or a newly placed block can stop a falling icicle above its
+            // marked target. Cancel it quietly so the attack cannot hang forever
+            // and never deal damage through the obstruction.
+            if (entity.getY() >= icicle.lastY - 0.01) {
+                icicle.stalledTicks++;
+            } else {
+                icicle.lastY = entity.getY();
+                icicle.stalledTicks = 0;
+            }
+            if (icicle.stalledTicks >= 8) {
+                entity.discard();
+                iterator.remove();
             }
         }
     }
@@ -248,5 +263,17 @@ public class IcicleRainGoal extends Goal {
     }
 
     private record ImpactPoint(double x, double z, int groundY) {}
-    private record ActiveIcicle(FallingBlockEntity entity, ImpactPoint impact) {}
+
+    private static final class ActiveIcicle {
+        private final FallingBlockEntity entity;
+        private final ImpactPoint impact;
+        private double lastY;
+        private int stalledTicks;
+
+        private ActiveIcicle(FallingBlockEntity entity, ImpactPoint impact) {
+            this.entity = entity;
+            this.impact = impact;
+            this.lastY = entity.getY();
+        }
+    }
 }
