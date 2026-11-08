@@ -1395,6 +1395,9 @@ public class BossEntity extends Monster {
         movementController.reset();
     }
     public String getDisguiseEntity() { return entityData.get(DATA_DISGUISE_ENTITY); }
+
+    /** Starts the synchronized hand/attack animation for a boss ability wind-up. */
+    public void playAttackAnimation() { swing(InteractionHand.MAIN_HAND); }
     public void setDisguiseEntity(String entityId) {
         entityData.set(DATA_DISGUISE_ENTITY, entityId != null && !"custom".equalsIgnoreCase(entityId) ? entityId : "");
     }
