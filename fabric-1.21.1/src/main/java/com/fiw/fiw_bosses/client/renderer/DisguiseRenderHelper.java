@@ -74,14 +74,39 @@ final class DisguiseRenderHelper {
         float attackLean = 0.0f;
         float attackTwist = 0.0f;
         int attackTicks = source.getAttackAnimationTicks();
+        int attackStyle = source.getAttackAnimation();
         if (attackTicks > 0) {
-            float progress = 1.0f - attackTicks / 28.0f;
-            float anticipation = smoothstep(0.0f, 0.34f, progress);
-            float strike = smoothstep(0.34f, 0.52f, progress);
-            float recovery = smoothstep(0.52f, 1.0f, progress);
-            attackLean = -7.0f * anticipation + 17.0f * strike - 10.0f * recovery;
-            attackTwist = (float) Math.sin(progress * Math.PI) * 5.5f;
-            bob += (float) Math.sin(progress * Math.PI) * 0.035f;
+            float duration = (attackStyle == 2 || attackStyle == 3) ? 34.0f : 28.0f;
+            float progress = 1.0f - attackTicks / duration;
+            float anticipation = smoothstep(0.0f, 0.36f, progress);
+            float strike = smoothstep(0.36f, 0.55f, progress);
+            float recovery = smoothstep(0.55f, 1.0f, progress);
+            switch (attackStyle) {
+                case 2 -> { // Heavy smash: pull the whole body back, then crash down.
+                    attackLean = -11.0f * anticipation + 25.0f * strike - 14.0f * recovery;
+                    attackTwist = (float) Math.sin(progress * Math.PI) * 3.0f;
+                    bob -= (float) Math.sin(progress * Math.PI) * 0.075f;
+                }
+                case 3 -> { // Ground slam: dramatic wind-up and a sharper downward hit.
+                    attackLean = -14.0f * anticipation + 30.0f * strike - 16.0f * recovery;
+                    attackTwist = (float) Math.sin(progress * Math.PI) * 2.0f;
+                    bob -= (float) Math.sin(progress * Math.PI) * 0.095f;
+                }
+                case 4 -> { // Ranged frost cast: lift and channel energy before release.
+                    attackLean = 5.0f * anticipation - 2.0f * strike - 3.0f * recovery;
+                    attackTwist = (float) Math.sin(progress * Math.PI * 2.0f) * 4.0f;
+                    bob += (float) Math.sin(progress * Math.PI) * 0.045f;
+                }
+                case 5 -> { // Charge: lean into the run and recoil on recovery.
+                    attackLean = 12.0f * anticipation + 8.0f * strike - 20.0f * recovery;
+                    attackTwist = (float) Math.sin(progress * Math.PI) * 6.0f;
+                }
+                default -> { // Slash: compact shoulder/body twist with a quick follow-through.
+                    attackLean = -6.0f * anticipation + 14.0f * strike - 8.0f * recovery;
+                    attackTwist = (float) Math.sin(progress * Math.PI) * 9.0f;
+                    bob += (float) Math.sin(progress * Math.PI) * 0.025f;
+                }
+            }
         }
 
         poseStack.pushPose();
