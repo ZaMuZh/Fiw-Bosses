@@ -159,8 +159,8 @@ public class IcicleRainGoal extends Goal {
 
         BlockPos landingPos = BlockPos.containing(point.x, point.groundY + 1, point.z);
         if (!level.isEmptyBlock(landingPos)) {
-            // Don't overwrite arena builds or existing blocks at the impact point.
-            shatter(level, point);
+            // A blocked impact lane cancels this icicle; never deal instant damage
+            // through a ceiling or solid arena block.
             return;
         }
 
@@ -171,7 +171,7 @@ public class IcicleRainGoal extends Goal {
         entity.dropItem = false;
         entity.disableDrop(); // Destroy the falling block on landing instead of placing arena ice.
         entity.setDeltaMovement(0.0, -0.85, 0.0);
-        falling.add(new ActiveIcicle(entity, point, landingPos, state));
+        falling.add(new ActiveIcicle(entity, point));
         level.sendParticles(ParticleTypes.SNOWFLAKE,
                 point.x, point.groundY + height, point.z,
                 7, 0.18, 0.25, 0.18, 0.02);
@@ -239,6 +239,5 @@ public class IcicleRainGoal extends Goal {
     }
 
     private record ImpactPoint(double x, double z, int groundY) {}
-    private record ActiveIcicle(FallingBlockEntity entity, ImpactPoint impact,
-                                BlockPos landingPos, BlockState state) {}
+    private record ActiveIcicle(FallingBlockEntity entity, ImpactPoint impact) {}
 }
