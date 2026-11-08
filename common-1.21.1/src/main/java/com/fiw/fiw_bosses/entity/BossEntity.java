@@ -626,6 +626,8 @@ public class BossEntity extends Monster {
             creditDamage(pendingHitter, healthBeforeHit);
             pendingHitter = null;
         }
+        // Guardian minions belong to this encounter; never leave them behind after the boss dies.
+        if (level() instanceof ServerLevel sl) clearShieldPylons(sl);
         super.die(damageSource);
         if (!level().isClientSide && definition != null) {
             if (tracksFight()) BossFightHandler.onBossDeath(this, damageSource);
@@ -636,6 +638,9 @@ public class BossEntity extends Monster {
 
     @Override
     public void remove(RemovalReason reason) {
+        if (reason.shouldDestroy() && level() instanceof ServerLevel sl) {
+            clearShieldPylons(sl);
+        }
         super.remove(reason);
         bossBar.removeAllPlayers();
         // Killed or discarded (not unloaded): no longer counts toward spawnLimits.maxAlive.
