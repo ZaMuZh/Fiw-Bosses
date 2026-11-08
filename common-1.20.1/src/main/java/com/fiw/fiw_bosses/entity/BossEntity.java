@@ -872,7 +872,61 @@ public class BossEntity extends Monster {
             Entity e = sl.getEntity(id);
             return e == null || !e.isAlive();
         });
-        if (shieldPylons.isEmpty()) dropShield(true);
+        if (shieldPylons.isEmpty()) {
+            dropShield(true);
+            return;
+        }
+        tickShieldVisual(sl, phase.shield);
+    }
+
+    /**
+     * Snow-glass barrier around the boss, with a visible energy tether to every living
+     * guardian. The shell loses rings and density as guardians are defeated.
+     */
+    private void tickShieldVisual(ServerLevel sl, ShieldConfig cfg) {
+        if (tickCount % 5 != 0) return;
+
+        int remaining = shieldPylons.size();
+        double strength = Math.max(0.08, Math.min(1.0, (double) remaining / Math.max(1, cfg.count)));
+        int rings = Math.max(1, (int) Math.ceil(3.0 * strength));
+        int points = Math.max(6, (int) Math.round(18.0 * strength));
+        double radius = 2.15 + (1.0 - strength) * 0.7;
+        double baseY = getY() + 0.35;
+        double height = 2.8;
+
+        for (int ring = 0; ring < rings; ring++) {
+            double y = baseY + (rings == 1 ? height * 0.5 : height * ring / (rings - 1.0));
+            double rotation = tickCount * 2.5 + ring * 18.0;
+            for (int p = 0; p < points; p++) {
+                double angle = Math.toRadians(rotation + p * (360.0 / points));
+                double px = getX() + Math.cos(angle) * radius;
+                double pz = getZ() + Math.sin(angle) * radius;
+                sl.sendParticles(ParticleTypes.SNOWFLAKE, px, y, pz, 1, 0, 0.015, 0, 0);
+                if ((p + ring) % 3 == 0) {
+                    sl.sendParticles(ParticleTypes.END_ROD, px, y, pz, 1, 0, 0, 0, 0);
+                }
+            }
+        }
+
+        for (UUID id : shieldPylons) {
+            Entity guardian = sl.getEntity(id);
+            if (guardian == null || !guardian.isAlive()) continue;
+            double x1 = getX();
+            double y1 = getY() + 1.55;
+            double z1 = getZ();
+            double x2 = guardian.getX();
+            double y2 = guardian.getY() + Math.max(0.4, guardian.getBbHeight() * 0.6);
+            double z2 = guardian.getZ();
+            int steps = 4;
+            for (int step = 0; step <= steps; step++) {
+                double t = step / (double) steps;
+                sl.sendParticles(ParticleTypes.END_ROD,
+                        x1 + (x2 - x1) * t,
+                        y1 + (y2 - y1) * t,
+                        z1 + (z2 - z1) * t,
+                        1, 0, 0, 0, 0);
+            }
+        }
     }
 
     private void armShield(ServerLevel sl, ShieldConfig cfg) {
