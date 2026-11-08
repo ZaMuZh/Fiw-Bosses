@@ -102,6 +102,19 @@ class ExampleConfigsTest {
         assertEquals("cobblemon:pokemon:snover", minion.renderEntity);
         assertTrue(minion.abilities.stream().anyMatch(a -> "melee_slash".equals(a.type)),
                 "Snover guardians must have an actual attack");
+
+        // The icicle attack must remain present and bounded in every late-game phase.
+        int[] expectedIcicles = {20, 26, 32};
+        for (int phaseIndex = 1; phaseIndex < boss.phases.size(); phaseIndex++) {
+            var icicleRain = boss.phases.get(phaseIndex).abilities.stream()
+                    .filter(a -> "icicle_rain".equals(a.type))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("phase " + phaseIndex + " has no icicle rain"));
+            assertEquals(expectedIcicles[phaseIndex - 1],
+                    icicleRain.params.get("icicleCount").getAsInt());
+            assertTrue(icicleRain.params.get("warnTicks").getAsInt() >= 20,
+                    "players need time to react to marked impact zones");
+        }
     }
 
     @Test
