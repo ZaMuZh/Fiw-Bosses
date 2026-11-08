@@ -23,7 +23,7 @@ La primera fase ya cuenta con cinco patrones de ataque: explosión AOE, carga fr
 
 ## Equilibrio
 
-Los daños y cooldowns están ajustados para que el combate suponga un reto con armadura completa de diamante. La carga frontal conserva sus valores originales. Los Snover ahora tienen 40 de vida, 9 de daño de ataque base y un corte de 12 de daño, con 4,8 bloques de alcance y 1,5 segundos de espera. La armadura de diamante reduce el daño físico, pero los grupos de guardianes deben obligar a moverse y evitar quedarse rodeado.
+Los daños y cooldowns están ajustados para que el combate suponga un reto con armadura completa de diamante. La carga frontal conserva sus valores originales. Los Snover tienen 40 de vida y buscan jugadores por sí mismos en un radio de 20 bloques. Al alcanzar a un jugador, realizan un golpe cuerpo a cuerpo cada 26 ticks (1,3 segundos) que inflige 3 puntos de daño fijo (1,5 corazones), sin reducción por los puntos normales de armadura; también aplican retroceso y muestran partículas de impacto. No atacan a jugadores en creativo ni espectadores.
 
 ## Mega-Abomasnow y animaciones
 
