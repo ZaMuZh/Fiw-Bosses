@@ -17,13 +17,13 @@ Después reinicia el servidor y ejecuta `/boss reload` y `/boss validate`.
 
 ## Fases y guardianes
 
-El encuentro tiene cuatro fases con oleadas de 8, 12, 16 y 20 Snover. Abomasnow permanece protegido mientras quede algún guardián vivo. Al derrotar al último Snover, el escudo se rompe y el jefe vuelve a ser vulnerable.
+El encuentro tiene cuatro fases con oleadas de 4, 6, 8 y 10 Snover. Abomasnow permanece protegido mientras quede algún guardián vivo. Al derrotar al último Snover, el escudo se rompe y el jefe vuelve a ser vulnerable.
 
 La primera fase ya cuenta con cinco patrones de ataque: explosión AOE, carga frontal, corte cuerpo a cuerpo, pinchos de hielo y cristal helado. Las fases siguientes añaden ventisca, lluvia de carámbanos, golpe sísmico y congelación. La ventisca final ya no es solo visual: su zona de daño cubre la base del tornado, golpea periódicamente, ralentiza y atrae/eleva a los jugadores hacia el remolino.
 
 ## Equilibrio
 
-Los daños y cooldowns están ajustados para que el combate suponga un reto con armadura completa de diamante. La carga frontal conserva sus valores originales. Los Snover tienen 40 de vida y buscan jugadores por sí mismos en un radio de 20 bloques. Al alcanzar a un jugador, realizan un golpe cuerpo a cuerpo cada 26 ticks (1,3 segundos) que inflige 3 puntos de daño fijo (1,5 corazones), sin reducción por los puntos normales de armadura; también aplican retroceso y muestran partículas de impacto. No atacan a jugadores en creativo ni espectadores.
+Los daños y cooldowns están ajustados para que el combate suponga un reto con armadura completa de diamante. La carga frontal conserva sus valores originales. Los Snover tienen 40 de vida y buscan jugadores por sí mismos en un radio de 20 bloques. Al alcanzar a un jugador, realizan un golpe cuerpo a cuerpo cada 16 ticks (0,8 segundos) que inflige 3 puntos de daño fijo (1,5 corazones), sin reducción por los puntos normales de armadura; no empujan al jugador y muestran partículas de impacto. No atacan a jugadores en creativo ni espectadores.
 
 ## Mega-Abomasnow y animaciones
 
