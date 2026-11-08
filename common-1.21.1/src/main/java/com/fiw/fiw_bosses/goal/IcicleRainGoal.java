@@ -156,7 +156,9 @@ public class IcicleRainGoal extends Goal {
         BlockPos spawnPos = new BlockPos(x, point.groundY + Math.max(8, height), z);
         // Never replace an arena/build block to create a projectile, and keep the
         // temporary entity inside the dimension's build limits.
-        if (spawnPos.getY() >= level.getMaxBuildHeight() || !level.isEmptyBlock(spawnPos)) {
+        if (spawnPos.getY() < level.getMinBuildHeight()
+                || spawnPos.getY() >= level.getMaxBuildHeight()
+                || !level.isEmptyBlock(spawnPos)) {
             return;
         }
         BlockState state = level.getRandom().nextBoolean()
