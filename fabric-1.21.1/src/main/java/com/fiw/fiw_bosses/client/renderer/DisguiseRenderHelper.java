@@ -76,7 +76,7 @@ final class DisguiseRenderHelper {
         int attackTicks = source.getAttackAnimationTicks();
         int attackStyle = source.getAttackAnimation();
         if (attackTicks > 0) {
-            float duration = (attackStyle == 2 || attackStyle == 3) ? 34.0f : 28.0f;
+            float duration = attackStyle == 6 ? 50.0f : ((attackStyle == 2 || attackStyle == 3) ? 34.0f : 28.0f);
             float progress = 1.0f - attackTicks / duration;
             float anticipation = smoothstep(0.0f, 0.36f, progress);
             float strike = smoothstep(0.36f, 0.55f, progress);
@@ -100,6 +100,12 @@ final class DisguiseRenderHelper {
                 case 5 -> { // Charge: lean into the run and recoil on recovery.
                     attackLean = 12.0f * anticipation + 8.0f * strike - 20.0f * recovery;
                     attackTwist = (float) Math.sin(progress * Math.PI) * 6.0f;
+                }
+                case 6 -> { // Phase awakening: rise, hold the glacial energy, then release.
+                    float pulse = (float) Math.sin(progress * Math.PI);
+                    attackLean = -10.0f * anticipation + 7.0f * strike - 4.0f * recovery;
+                    attackTwist = (float) Math.sin(progress * Math.PI * 2.0) * 3.0f;
+                    bob += pulse * 0.16f;
                 }
                 default -> { // Slash: compact shoulder/body twist with a quick follow-through.
                     attackLean = -6.0f * anticipation + 14.0f * strike - 8.0f * recovery;
