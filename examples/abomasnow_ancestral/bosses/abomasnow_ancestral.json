@@ -260,15 +260,15 @@
         },
         {
           "type": "particle_tornado",
-          "cooldownTicks": 105,
+          "cooldownTicks": 95,
           "params": {
-            "maxRadius": 12,
-            "height": 16,
-            "duration": 140,
-            "rotationSpeed": 18,
-            "twist": 32,
-            "disks": 22,
-            "damage": 3.2,
+            "maxRadius": 18,
+            "height": 22,
+            "duration": 160,
+            "rotationSpeed": 21,
+            "twist": 38,
+            "disks": 18,
+            "damage": 2.6,
             "particle": "minecraft:snowflake",
             "accentParticle": "minecraft:cloud",
             "taunt": "&b&l¡LA VENTISCA FINAL!"

@@ -1,6 +1,7 @@
 package com.fiw.fiw_bosses.entity;
 
 import com.fiw.fiw_bosses.fight.StuckTracker;
+import com.fiw.fiw_bosses.goal.MinionBasicAttackGoal;
 import net.minecraft.server.level.ServerLevel;
 import com.fiw.fiw_bosses.core.FiwBossesCore;
 import com.fiw.fiw_bosses.config.*;
@@ -95,6 +96,13 @@ public class MinionEntity extends BossEntity {
 
     private void setupMovementGoals() {
         scheduleGoalAction(() -> {
+            goalSelector.getAvailableGoals().stream()
+                    .filter(wg -> wg.getGoal() instanceof MeleeAttackGoal)
+                    .map(WrappedGoal::getGoal).toList()
+                    .forEach(goalSelector::removeGoal);
+            if (!"static".equals(movementMode)) {
+                goalSelector.addGoal(6, new MinionBasicAttackGoal(this, 26));
+            }
             switch (movementMode) {
                 case "static" -> {
                     // Remove wander goals — minion stays in place, only uses abilities
