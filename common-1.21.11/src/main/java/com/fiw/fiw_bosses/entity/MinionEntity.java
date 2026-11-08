@@ -121,6 +121,9 @@ public class MinionEntity extends BossEntity {
     // ── Death / loot ─────────────────────────────────────────────────────────
 
     @Override
+    protected boolean dropsBossLoot() { return false; }
+
+    @Override
     public void die(DamageSource damageSource) {
         // Drop minion-specific loot instead of boss loot
         if (!level().isClientSide() && minionDef != null && minionDef.loot != null) {
