@@ -175,9 +175,15 @@ public class IcicleRainGoal extends Goal {
         }
 
         BlockState previous = level.getBlockState(spawnPos);
+        FallingBlockEntity entity;
         level.setBlock(spawnPos, state, 3);
-        FallingBlockEntity entity = FallingBlockEntity.fall(level, spawnPos, state);
-        level.setBlock(spawnPos, previous, 3);
+        try {
+            entity = FallingBlockEntity.fall(level, spawnPos, state);
+        } finally {
+            // Restore the original air/block state even if entity construction fails.
+            // A failed visual attack must never leave temporary ice in player builds.
+            level.setBlock(spawnPos, previous, 3);
+        }
         if (entity.isRemoved()) return;
         entity.dropItem = false;
         entity.disableDrop(); // Destroy the falling block on landing instead of placing arena ice.
