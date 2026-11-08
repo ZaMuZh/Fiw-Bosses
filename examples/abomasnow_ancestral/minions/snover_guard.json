@@ -20,7 +20,17 @@
   "damageFactionAllies": false,
   "targetFactionAllies": false,
   "damageOwnGroup": false,
-  "abilities": [],
+  "abilities": [
+    {
+      "type": "melee_slash",
+      "cooldownTicks": 72,
+      "params": {
+        "range": 3.8,
+        "arc": 125,
+        "damage": 3.5
+      }
+    }
+  ],
   "loot": [],
   "renderEntity": "cobblemon:pokemon:snover"
 }
