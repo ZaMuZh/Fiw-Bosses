@@ -215,7 +215,9 @@ public class BossPhaseManager {
         ServerLevel level = (ServerLevel) boss.level();
         // Give every phase change a visible body cue, not just a chat line and particles.
         boolean megaEvolution = phase.renderEntity != null
-                && (phase.renderEntity.contains("aspects=mega") || phase.renderEntity.contains("form=mega"));
+                && (phase.renderEntity.contains("mega_evolution=mega")
+                || phase.renderEntity.contains("aspects=mega")
+                || phase.renderEntity.contains("form=mega"));
         boss.playAttackAnimation(megaEvolution ? 7 : 6);
 
         if (phase.transitionMessage != null && !phase.transitionMessage.isEmpty()) {
@@ -244,7 +246,7 @@ public class BossPhaseManager {
                     3, 0.5, 0.5, 0.5, 0.1);
         }
 
-        // The Mega form gets a dedicated glacial burst before applyEffective swaps its disguise.
+        // The Mega form gets a glacial ignition; the actual model swap is delayed to the animation climax.
         if (phase.renderEntity != null && (phase.renderEntity.contains("mega_evolution=mega")
                 || phase.renderEntity.contains("aspects=mega") || phase.renderEntity.contains("form=mega"))) {
             level.playSound(null, boss.getX(), boss.getY(), boss.getZ(),
