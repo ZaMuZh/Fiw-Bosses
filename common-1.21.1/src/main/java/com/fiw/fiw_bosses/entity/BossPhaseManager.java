@@ -238,6 +238,29 @@ public class BossPhaseManager {
                     boss.getX(), boss.getY() + 1.0, boss.getZ(),
                     3, 0.5, 0.5, 0.5, 0.1);
         }
+
+        // The Mega form gets a dedicated glacial burst before applyEffective swaps its disguise.
+        if (phase.renderEntity != null && phase.renderEntity.contains("form=mega")) {
+            level.playSound(null, boss.getX(), boss.getY(), boss.getZ(),
+                    SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 2.2f, 0.55f);
+            level.sendParticles(ParticleTypes.SNOWFLAKE,
+                    boss.getX(), boss.getY() + 1.5, boss.getZ(),
+                    150, 2.8, 2.0, 2.8, 0.16);
+            level.sendParticles(ParticleTypes.END_ROD,
+                    boss.getX(), boss.getY() + 1.5, boss.getZ(),
+                    70, 1.8, 1.5, 1.8, 0.08);
+            for (int ring = 0; ring < 3; ring++) {
+                double radius = 2.0 + ring * 1.25;
+                double y = boss.getY() + 0.35 + ring * 0.9;
+                for (int point = 0; point < 32; point++) {
+                    double angle = Math.PI * 2.0 * point / 32.0 + ring * 0.35;
+                    level.sendParticles(ParticleTypes.SNOWFLAKE,
+                            boss.getX() + Math.cos(angle) * radius, y,
+                            boss.getZ() + Math.sin(angle) * radius,
+                            1, 0, 0.02, 0, 0);
+                }
+            }
+        }
     }
 
     /** Re-applies current phase goals and stats without playing transition effects. */
