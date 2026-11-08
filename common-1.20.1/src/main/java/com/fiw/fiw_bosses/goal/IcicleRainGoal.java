@@ -169,6 +169,7 @@ public class IcicleRainGoal extends Goal {
         FallingBlockEntity entity = FallingBlockEntity.fall(level, spawnPos, state);
         level.setBlock(spawnPos, previous, 3);
         entity.dropItem = false;
+        entity.disableDrop(); // Destroy on landing instead of placing ice in the arena.
         entity.setDeltaMovement(0.0, -0.85, 0.0);
         falling.add(new ActiveIcicle(entity, point, landingPos, state));
         level.sendParticles(ParticleTypes.SNOWFLAKE,
@@ -186,9 +187,6 @@ public class IcicleRainGoal extends Goal {
                 // Only a projectile that actually reached the marked ground can deal
                 // impact damage. A projectile removed by chunk unload/interruption
                 // must not create a phantom explosion.
-                if (level.getBlockState(icicle.landingPos).is(icicle.state.getBlock())) {
-                    level.setBlock(icicle.landingPos, Blocks.AIR.defaultBlockState(), 3);
-                }
                 shatter(level, icicle.impact);
                 if (entity.isAlive()) entity.discard();
                 iterator.remove();
