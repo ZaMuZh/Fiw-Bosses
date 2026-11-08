@@ -138,8 +138,8 @@ public class ParticleTornadoGoal extends Goal {
                 3, maxRadius * 0.4, 0.1, maxRadius * 0.4, 0.02);
 
         if ((damage > 0 || fire) && tick % 10 == 0) {
-            AABB funnel = new AABB(origin.x - maxRadius, origin.y, origin.z - maxRadius,
-                                   origin.x + maxRadius, origin.y + height, origin.z + maxRadius);
+            AABB funnel = new AABB(origin.x - maxRadius, origin.y - 2.0, origin.z - maxRadius,
+                                   origin.x + maxRadius, origin.y + height + 2.0, origin.z + maxRadius);
             List<LivingEntity> inside = level.getEntitiesOfClass(LivingEntity.class, funnel,
                     e -> boss.canAbilityHit(e)
                          && isInsideTornado(e));
@@ -179,8 +179,8 @@ public class ParticleTornadoGoal extends Goal {
 
     private boolean isInsideTornado(LivingEntity entity) {
         double relY = entity.getY() - origin.y;
-        if (relY < 0 || relY > height) return false;
-        double t = relY / height;
+        if (relY < -1.5 || relY > height + 2.0) return false;
+        double t = net.minecraft.util.Mth.clamp(relY / height, 0.0, 1.0);
         // The funnel is deliberately broad at ground level so players inside the
         // visible storm are actually caught; it narrows toward the eye near the top.
         double allowedRadius = maxRadius * (0.30 + 0.70 * t) + 1.25;
