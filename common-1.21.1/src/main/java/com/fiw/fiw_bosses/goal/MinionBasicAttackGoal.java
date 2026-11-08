@@ -10,7 +10,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 import java.util.Comparator;
@@ -77,10 +76,6 @@ public final class MinionBasicAttackGoal extends Goal {
             // Fixed 3 HP (1.5 hearts) per successful strike, even through full
             // diamond armor. The ordinary mobAttack source was armor-reduced.
             target.hurt(minion.damageSources().magic(), SNOVER_HIT_DAMAGE);
-
-            Vec3 away = target.position().subtract(minion.position()).normalize();
-            target.push(away.x * 0.28, 0.18, away.z * 0.28);
-            target.hurtMarked = true;
 
             if (minion.level() instanceof ServerLevel level) {
                 level.playSound(null, minion.getX(), minion.getY(), minion.getZ(),
