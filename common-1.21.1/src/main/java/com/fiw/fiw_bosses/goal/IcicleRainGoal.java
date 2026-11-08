@@ -223,6 +223,23 @@ public class IcicleRainGoal extends Goal {
     public void stop() {
         cooldownTimer = cooldown;
         active = false;
+
+        // If the boss is interrupted, killed or unloaded mid-volley, remove only
+        // the falling ice entities and temporary landing blocks owned by this goal.
+        // This prevents abandoned projectiles or ice blocks from surviving the fight.
+        if (!boss.level().isClientSide && boss.level() instanceof ServerLevel level) {
+            for (ActiveIcicle icicle : falling) {
+                FallingBlockEntity entity = icicle.entity;
+                if (!entity.isRemoved()) entity.discard();
+                if (level.getBlockState(icicle.landingPos).is(icicle.state.getBlock())) {
+                    level.setBlock(icicle.landingPos, Blocks.AIR.defaultBlockState(), 3);
+                }
+            }
+        }
+        falling.clear();
+        impacts.clear();
+        spawned = 0;
+        age = 0;
     }
 
     private record ImpactPoint(double x, double z, int groundY) {}
