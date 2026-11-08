@@ -13,6 +13,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -134,7 +137,7 @@ public class ParticleTornadoGoal extends Goal {
                 origin.x, origin.y + 0.1, origin.z,
                 3, maxRadius * 0.4, 0.1, maxRadius * 0.4, 0.02);
 
-        if ((damage > 0 || fire) && tick % 5 == 0) {
+        if ((damage > 0 || fire) && tick % 10 == 0) {
             AABB funnel = new AABB(origin.x - maxRadius, origin.y, origin.z - maxRadius,
                                    origin.x + maxRadius, origin.y + height, origin.z + maxRadius);
             List<LivingEntity> inside = level.getEntitiesOfClass(LivingEntity.class, funnel,
@@ -143,8 +146,13 @@ public class ParticleTornadoGoal extends Goal {
             for (LivingEntity entity : inside) {
                 if (damage > 0) boss.dealAbilityDamage(entity, boss.damageSources().mobAttack(boss), damage);
                 if (fire) entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), fireSeconds * 20));
-                Vec3 toCenter = origin.subtract(entity.position()).normalize();
-                entity.push(toCenter.x * 0.3, 0.15, toCenter.z * 0.3);
+                if (entity instanceof Player player && !player.isCreative() && !player.isSpectator()) {
+                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 24, 0, true, true));
+                }
+                // The storm now pulls targets into its body and lifts them into the
+                // rotating ice funnel instead of only drawing particles around them.
+                Vec3 toCenter = new Vec3(origin.x - entity.getX(), 0.0, origin.z - entity.getZ()).normalize();
+                entity.push(toCenter.x * 0.48, Math.max(0.12, entity.getDeltaMovement().y) + 0.12, toCenter.z * 0.48);
                 entity.hurtMarked = true;
             }
         }
@@ -173,7 +181,9 @@ public class ParticleTornadoGoal extends Goal {
         double relY = entity.getY() - origin.y;
         if (relY < 0 || relY > height) return false;
         double t = relY / height;
-        double allowedRadius = maxRadius * t + 1.0;
+        // The funnel is deliberately broad at ground level so players inside the
+        // visible storm are actually caught; it narrows toward the eye near the top.
+        double allowedRadius = maxRadius * (0.30 + 0.70 * t) + 1.25;
         double dx = entity.getX() - origin.x;
         double dz = entity.getZ() - origin.z;
         return dx * dx + dz * dz <= allowedRadius * allowedRadius;
