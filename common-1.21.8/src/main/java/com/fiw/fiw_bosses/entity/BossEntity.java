@@ -974,6 +974,14 @@ public class BossEntity extends Monster {
     }
 
     private void dropShield(boolean broken) {
+        // A phase change can end a shield before its guardians are defeated.
+        // Remove those encounter-owned minions instead of orphaning them in the arena.
+        if (!broken && level() instanceof ServerLevel sl) {
+            for (UUID id : shieldPylons) {
+                Entity guardian = sl.getEntity(id);
+                if (guardian != null) guardian.discard();
+            }
+        }
         shieldActive = false;
         shieldPylons.clear();
         PhaseDefinition phase = phaseManager != null ? phaseManager.getCurrentPhase() : null;
