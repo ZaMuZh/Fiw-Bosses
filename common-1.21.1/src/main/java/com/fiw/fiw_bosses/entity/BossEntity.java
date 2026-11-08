@@ -867,8 +867,7 @@ public class BossEntity extends Monster {
             armShield(sl, phase.shield);
             return;
         }
-        // Give pylons a few seconds to load back in after a restart before counting them.
-        if (!shieldActive || tickCount < 100) return;
+        if (!shieldActive) return;
         shieldPylons.removeIf(id -> {
             Entity e = sl.getEntity(id);
             return e == null || !e.isAlive();
