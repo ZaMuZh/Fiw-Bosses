@@ -57,7 +57,7 @@ public class ChargeGoal extends Goal {
 
     @Override
     public void start() {
-        boss.playAttackAnimation();
+        boss.playAttackAnimation(5);
         LivingEntity target = boss.getTarget();
         if (target == null) return;
 
