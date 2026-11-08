@@ -148,7 +148,11 @@ public class BossPhaseManager {
 
         // === TARGETING ===
         boss.getTargetSelector().addGoal(1, new AllyAwareHurtByTargetGoal(boss));
-        boss.getTargetSelector().addGoal(2, new NearestAttackableTargetGoal<>(boss, Player.class, true));
+        // Minions are defensive guards: they retaliate when attacked, but must
+        // never acquire nearby players as targets by proximity.
+        if (!(boss instanceof MinionEntity)) {
+            boss.getTargetSelector().addGoal(2, new NearestAttackableTargetGoal<>(boss, Player.class, true));
+        }
 
         // === ABILITY GOALS ===
         int priority = 1;
