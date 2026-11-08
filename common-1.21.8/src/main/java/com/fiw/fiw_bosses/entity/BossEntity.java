@@ -622,14 +622,19 @@ public class BossEntity extends Monster {
     @Override
     public void checkDespawn() { /* bosses never auto-despawn */ }
 
+    /** Whether this entity should drop the configured boss loot table on death. */
+    protected boolean dropsBossLoot() { return true; }
+
     @Override
     public void die(DamageSource damageSource) {
         if (pendingHitter != null) {
             creditDamage(pendingHitter, healthBeforeHit);
             pendingHitter = null;
         }
+        // Guardian minions are owned by this encounter; never leave them behind.
+        if (level() instanceof ServerLevel sl) clearShieldPylons(sl);
         super.die(damageSource);
-        if (!level().isClientSide() && definition != null) {
+        if (!level().isClientSide() && definition != null && dropsBossLoot()) {
             if (tracksFight()) BossFightHandler.onBossDeath(this, damageSource);
             else BossLootHandler.dropLoot(this, definition);
         }
@@ -638,6 +643,10 @@ public class BossEntity extends Monster {
 
     @Override
     public void remove(RemovalReason reason) {
+        // Also clean up on administrative despawn/reset, not only normal boss death.
+        if (reason.shouldDestroy() && level() instanceof ServerLevel sl) {
+            clearShieldPylons(sl);
+        }
         super.remove(reason);
         bossBar.removeAllPlayers();
         // Killed or discarded (not unloaded): no longer counts toward spawnLimits.maxAlive.
@@ -873,7 +882,61 @@ public class BossEntity extends Monster {
             Entity e = sl.getEntity(id);
             return e == null || !e.isAlive();
         });
-        if (shieldPylons.isEmpty()) dropShield(true);
+        if (shieldPylons.isEmpty()) {
+            dropShield(true);
+            return;
+        }
+        tickShieldVisual(sl, phase.shield);
+    }
+
+    /**
+     * Snow-glass barrier around the boss, with a visible energy tether to every living
+     * guardian. The shell loses rings and density as guardians are defeated.
+     */
+    private void tickShieldVisual(ServerLevel sl, ShieldConfig cfg) {
+        if (tickCount % 5 != 0) return;
+
+        int remaining = shieldPylons.size();
+        double strength = Math.max(0.08, Math.min(1.0, (double) remaining / Math.max(1, cfg.count)));
+        int rings = Math.max(1, (int) Math.ceil(3.0 * strength));
+        int points = Math.max(6, (int) Math.round(18.0 * strength));
+        double radius = 2.15 + (1.0 - strength) * 0.7;
+        double baseY = getY() + 0.35;
+        double height = 2.8;
+
+        for (int ring = 0; ring < rings; ring++) {
+            double y = baseY + (rings == 1 ? height * 0.5 : height * ring / (rings - 1.0));
+            double rotation = tickCount * 2.5 + ring * 18.0;
+            for (int p = 0; p < points; p++) {
+                double angle = Math.toRadians(rotation + p * (360.0 / points));
+                double px = getX() + Math.cos(angle) * radius;
+                double pz = getZ() + Math.sin(angle) * radius;
+                sl.sendParticles(ParticleTypes.SNOWFLAKE, px, y, pz, 1, 0, 0.015, 0, 0);
+                if ((p + ring) % 3 == 0) {
+                    sl.sendParticles(ParticleTypes.END_ROD, px, y, pz, 1, 0, 0, 0, 0);
+                }
+            }
+        }
+
+        for (UUID id : shieldPylons) {
+            Entity guardian = sl.getEntity(id);
+            if (guardian == null || !guardian.isAlive()) continue;
+            double x1 = getX();
+            double y1 = getY() + 1.55;
+            double z1 = getZ();
+            double x2 = guardian.getX();
+            double y2 = guardian.getY() + Math.max(0.4, guardian.getBbHeight() * 0.6);
+            double z2 = guardian.getZ();
+            int steps = 4;
+            for (int step = 0; step <= steps; step++) {
+                double t = step / (double) steps;
+                sl.sendParticles(ParticleTypes.END_ROD,
+                        x1 + (x2 - x1) * t,
+                        y1 + (y2 - y1) * t,
+                        z1 + (z2 - z1) * t,
+                        1, 0, 0, 0, 0);
+            }
+        }
     }
 
     private void armShield(ServerLevel sl, ShieldConfig cfg) {
@@ -897,15 +960,28 @@ public class BossEntity extends Monster {
             pylon.snapTo(x, y, z, getRandom().nextFloat() * 360, 0);
             pylon.applyMinionDefinition(def, this);
             pylon.setPersistenceRequired();
-            sl.addFreshEntity(pylon);
-            shieldPylons.add(pylon.getUUID());
+            // Only track guardians that the world actually accepted. This keeps
+            // failed spawns from creating invisible shield links or false counts.
+            if (sl.addFreshEntity(pylon)) {
+                shieldPylons.add(pylon.getUUID());
+            } else {
+                pylon.discard();
+            }
         }
         if (shieldPylons.isEmpty()) return;
         shieldActive = true;
-        broadcastNearby(fillShield(cfg.message, count));
+        broadcastNearby(fillShield(cfg.message, shieldPylons.size()));
     }
 
     private void dropShield(boolean broken) {
+        // A phase change can end a shield before its guardians are defeated.
+        // Remove those encounter-owned minions instead of orphaning them in the arena.
+        if (!broken && level() instanceof ServerLevel sl) {
+            for (UUID id : shieldPylons) {
+                Entity guardian = sl.getEntity(id);
+                if (guardian != null) guardian.discard();
+            }
+        }
         shieldActive = false;
         shieldPylons.clear();
         PhaseDefinition phase = phaseManager != null ? phaseManager.getCurrentPhase() : null;
@@ -956,6 +1032,11 @@ public class BossEntity extends Monster {
     private void tickGuards() {
         if (definition == null || !(level() instanceof ServerLevel sl)) return;
         tickVehicle();
+
+        // Shield guardians and their barrier are combat-critical: update them every
+        // tick, while keeping expensive arena/rage bookkeeping on its 20-tick cadence.
+        if (tracksFight() && bossState == BossState.ACTIVE) tickShield(sl);
+
         if (tickCount % 20 != 0) return;
         if (home == null) home = position();
         long now = sl.getGameTime();
@@ -964,7 +1045,6 @@ public class BossEntity extends Monster {
             stuckTracker.reset();
             return;
         }
-        if (tracksFight()) tickShield(sl);
         tickAntiCheese(sl, now);
     }
 

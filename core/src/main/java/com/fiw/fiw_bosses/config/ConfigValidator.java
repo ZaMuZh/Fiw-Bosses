@@ -72,7 +72,10 @@ public final class ConfigValidator {
         } else {
             for (int i = 0; i < def.phases.size(); i++) {
                 PhaseDefinition p = def.phases.get(i);
-                if (p != null) checkAbilities(file, "phases[" + i + "].abilities", p.abilities, issues);
+                if (p != null) {
+                    checkAbilities(file, "phases[" + i + "].abilities", p.abilities, issues);
+                    checkEntityId(file, "phases[" + i + "].renderEntity", p.renderEntity, issues);
+                }
             }
         }
         if (def.rages != null) {
@@ -268,6 +271,13 @@ public final class ConfigValidator {
 
     private static void checkEntityId(String file, String field, String id, List<ConfigIssue> issues) {
         if (id == null || id.isEmpty() || "custom".equalsIgnoreCase(id)) return;
+        // Cobblemon disguises use a FIW-specific extended syntax:
+        // cobblemon:pokemon:<species> [form=<form> ...]
+        if (id.startsWith("cobblemon:pokemon:")) {
+            String properties = id.substring("cobblemon:pokemon:".length());
+            String species = properties.split("\\s+", 2)[0];
+            if (species.matches("[a-z0-9_]+")) return;
+        }
         if (!REGISTRY_ID.matcher(id).matches()) {
             issues.add(warn(file, field, "'" + id + "' is not a valid entity id (lowercase, like minecraft:zombie)"));
         }

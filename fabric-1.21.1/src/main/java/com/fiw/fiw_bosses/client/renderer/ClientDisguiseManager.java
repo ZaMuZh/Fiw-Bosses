@@ -15,7 +15,10 @@ public final class ClientDisguiseManager {
             DISGUISES.remove(entityId);
         } else {
             DISGUISES.put(entityId, disguiseEntity);
-            ClientSkinManager.removeSkin(entityId);
+            // Keep the custom skin cached for Cobblemon disguises as a renderer fallback.
+            if (!disguiseEntity.startsWith("cobblemon:pokemon:")) {
+                ClientSkinManager.removeSkin(entityId);
+            }
         }
     }
 
