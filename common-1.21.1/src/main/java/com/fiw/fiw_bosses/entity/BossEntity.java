@@ -90,6 +90,11 @@ public class BossEntity extends Monster {
     // Synced so the client (Jade, WTHIT, The One Probe, ...) reads the real max health too.
     private static final EntityDataAccessor<Float> DATA_CONFIGURED_MAX_HEALTH =
             SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.FLOAT);
+    // Small synchronized animation channel consumed by the client disguise renderer.
+    private static final EntityDataAccessor<Integer> DATA_ATTACK_ANIMATION =
+            SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ATTACK_ANIMATION_TICKS =
+            SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.INT);
 
     // ── Boss state ────────────────────────────────────────────────────────────
     public enum BossState { INACTIVE, PRE_FIGHT, ACTIVE, PRE_DEATH }
@@ -301,6 +306,8 @@ public class BossEntity extends Monster {
         super.defineSynchedData(builder);
         builder.define(DATA_DISGUISE_ENTITY, "");
         builder.define(DATA_CONFIGURED_MAX_HEALTH, 0.0f);
+        builder.define(DATA_ATTACK_ANIMATION, 0);
+        builder.define(DATA_ATTACK_ANIMATION_TICKS, 0);
     }
 
     // ── Tick ─────────────────────────────────────────────────────────────────
@@ -314,6 +321,12 @@ public class BossEntity extends Monster {
         }
 
         super.customServerAiStep();
+
+        int animationTicks = entityData.get(DATA_ATTACK_ANIMATION_TICKS);
+        if (animationTicks > 0) {
+            entityData.set(DATA_ATTACK_ANIMATION_TICKS, animationTicks - 1);
+            if (animationTicks == 1) entityData.set(DATA_ATTACK_ANIMATION, 0);
+        }
 
         if (!namedCooldowns.isEmpty()) {
             namedCooldowns.replaceAll((k, v) -> v - 1);
@@ -1395,8 +1408,19 @@ public class BossEntity extends Monster {
     }
     public String getDisguiseEntity() { return entityData.get(DATA_DISGUISE_ENTITY); }
 
-    /** Starts the synchronized hand/attack animation for a boss ability wind-up. */
-    public void playAttackAnimation() { swing(InteractionHand.MAIN_HAND); }
+    /**
+     * Starts a short, synchronized full-body attack cue. The client disguise renderer
+     * uses this state to animate the displayed Pokémon model, while swing() keeps
+     * the normal held-item animation for non-disguised bosses.
+     */
+    public void playAttackAnimation() {
+        entityData.set(DATA_ATTACK_ANIMATION, 1);
+        entityData.set(DATA_ATTACK_ANIMATION_TICKS, 28);
+        swing(InteractionHand.MAIN_HAND);
+    }
+
+    public int getAttackAnimation() { return entityData.get(DATA_ATTACK_ANIMATION); }
+    public int getAttackAnimationTicks() { return entityData.get(DATA_ATTACK_ANIMATION_TICKS); }
     public void setDisguiseEntity(String entityId) {
         entityData.set(DATA_DISGUISE_ENTITY, entityId != null && !"custom".equalsIgnoreCase(entityId) ? entityId : "");
     }
