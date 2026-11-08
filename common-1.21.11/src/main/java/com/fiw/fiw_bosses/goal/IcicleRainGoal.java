@@ -258,7 +258,7 @@ public class IcicleRainGoal extends Goal {
         // The projectiles are temporary attack entities. Remove airborne ones on
         // interruption, but never clear blocks at their landing coordinates: those
         // coordinates may have been modified by players during the warning/volley.
-        if (!boss.level().isClientSide) {
+        if (!boss.level().isClientSide()) {
             for (ActiveIcicle icicle : falling) {
                 if (!icicle.entity.isRemoved()) icicle.entity.discard();
             }
