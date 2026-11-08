@@ -73,7 +73,7 @@ public class IcicleRainGoal extends Goal {
 
     @Override
     public void start() {
-        boss.playAttackAnimation();
+        boss.playAttackAnimation(4);
         age = 0;
         spawned = 0;
         active = true;
