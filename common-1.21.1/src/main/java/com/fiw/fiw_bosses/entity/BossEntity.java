@@ -324,6 +324,9 @@ public class BossEntity extends Monster {
 
         int animationTicks = entityData.get(DATA_ATTACK_ANIMATION_TICKS);
         if (animationTicks > 0) {
+            if (entityData.get(DATA_ATTACK_ANIMATION) == 7 && level() instanceof ServerLevel serverLevel) {
+                tickMegaEvolutionVisual(serverLevel, animationTicks);
+            }
             entityData.set(DATA_ATTACK_ANIMATION_TICKS, animationTicks - 1);
             if (animationTicks == 1) entityData.set(DATA_ATTACK_ANIMATION, 0);
         }
@@ -351,6 +354,42 @@ public class BossEntity extends Monster {
             phaseManager.tick();
         }
         tickGuards();
+    }
+
+    /**
+     * Server-driven frost spiral for the Mega reveal. The client receives ordinary
+     * particles, so the effect is visible to every player without a custom packet.
+     */
+    private void tickMegaEvolutionVisual(ServerLevel level, int remainingTicks) {
+        int elapsed = 90 - remainingTicks;
+        float progress = net.minecraft.util.Mth.clamp(elapsed / 90.0f, 0.0f, 1.0f);
+        if (tickCount % 2 == 0) {
+            double radius = 0.75 + progress * 2.35;
+            double yBase = getY() + 0.25 + progress * 2.25;
+            for (int point = 0; point < 10; point++) {
+                double angle = Math.toRadians(tickCount * 13.0 + point * 36.0);
+                double helix = Math.sin(angle * 1.8 + progress * Math.PI * 4.0) * 0.35;
+                double x = getX() + Math.cos(angle) * radius;
+                double z = getZ() + Math.sin(angle) * radius;
+                double y = yBase + helix;
+                level.sendParticles(ParticleTypes.SNOWFLAKE, x, y, z, 1, 0.015, 0.025, 0.015, 0.005);
+                if (point % 2 == 0) {
+                    level.sendParticles(ParticleTypes.END_ROD, x, y, z, 1, 0, 0.015, 0, 0);
+                }
+            }
+        }
+
+        // The energy reaches critical mass near the end, then bursts as the Mega form appears.
+        if (remainingTicks == 24) {
+            level.playSound(null, getX(), getY(), getZ(),
+                    SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 1.8f, 0.72f);
+            level.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
+                    getX(), getY() + 1.0, getZ(), 1, 0, 0, 0, 0);
+            level.sendParticles(ParticleTypes.CLOUD,
+                    getX(), getY() + 1.0, getZ(), 34, 1.1, 0.7, 1.1, 0.12);
+            level.sendParticles(ParticleTypes.SNOWFLAKE,
+                    getX(), getY() + 1.4, getZ(), 64, 1.4, 1.0, 1.4, 0.18);
+        }
     }
 
     protected boolean showBossBar() { return true; }
