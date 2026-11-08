@@ -105,7 +105,7 @@ public class IcicleRainGoal extends Goal {
 
     @Override
     public void tick() {
-        if (!active || boss.level().isClientSide) return;
+        if (!active || boss.level().isClientSide()) return;
         ServerLevel level = (ServerLevel) boss.level();
         age++;
 
