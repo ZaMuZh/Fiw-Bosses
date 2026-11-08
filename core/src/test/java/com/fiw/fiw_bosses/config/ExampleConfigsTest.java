@@ -104,8 +104,24 @@ class ExampleConfigsTest {
         assertEquals(20, boss.phases.get(3).shield.count);
         assertEquals("cobblemon:pokemon:abomasnow mega_evolution=mega", boss.phases.get(3).renderEntity);
         assertEquals("cobblemon:pokemon:snover", minion.renderEntity);
-        assertTrue(minion.abilities.stream().anyMatch(a -> "melee_slash".equals(a.type)),
-                "Snover guardians must have an actual attack");
+        var snoverSlash = minion.abilities.stream()
+                .filter(a -> "melee_slash".equals(a.type))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Snover guardians must have an actual attack"));
+        assertEquals(12, snoverSlash.params.get("damage").getAsInt(),
+                "Snover slash must hurt players wearing diamond armor");
+        var finalStorm = boss.phases.get(3).abilities.stream()
+                .filter(a -> "particle_tornado".equals(a.type))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("final phase must include its blizzard"));
+        assertEquals(3.2f, finalStorm.params.get("damage").getAsFloat(), 0.001f,
+                "the final blizzard must deal damage, not only show particles");
+
+        Path megaAssignment = Path.of("common-1.21.1/src/main/resources/data/cobblemon/species_feature_assignments/fiw_bosses_abomasnow_mega.json");
+        String megaAssignmentJson = Files.readString(megaAssignment, StandardCharsets.UTF_8);
+        assertTrue(megaAssignmentJson.contains("\"abomasnow\""));
+        assertTrue(megaAssignmentJson.contains("\"mega_evolution\""),
+                "Abomasnow needs the Mega Showdown feature to resolve its Mega aspect");
 
         // The icicle attack must remain present and bounded in every late-game phase.
         int[] expectedIcicles = {20, 26, 32};
