@@ -900,12 +900,12 @@ public class BossEntity extends Monster {
      * guardian. The shell loses rings and density as guardians are defeated.
      */
     private void tickShieldVisual(ServerLevel sl, ShieldConfig cfg) {
-        if (tickCount % 4 != 0) return;
+        if (tickCount % 5 != 0) return;
 
         int remaining = shieldPylons.size();
         double strength = Math.max(0.08, Math.min(1.0, (double) remaining / Math.max(1, cfg.count)));
         int rings = Math.max(1, (int) Math.ceil(3.0 * strength));
-        int points = Math.max(8, (int) Math.round(24.0 * strength));
+        int points = Math.max(6, (int) Math.round(18.0 * strength));
         double radius = 2.15 + (1.0 - strength) * 0.7;
         double baseY = getY() + 0.35;
         double height = 2.8;
@@ -934,7 +934,7 @@ public class BossEntity extends Monster {
             double x2 = guardian.getX();
             double y2 = guardian.getY() + Math.max(0.4, guardian.getBbHeight() * 0.6);
             double z2 = guardian.getZ();
-            int steps = 6;
+            int steps = 4;
             for (int step = 0; step <= steps; step++) {
                 double t = step / (double) steps;
                 sl.sendParticles(ParticleTypes.END_ROD,
