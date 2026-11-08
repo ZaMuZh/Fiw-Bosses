@@ -101,7 +101,7 @@ public class MinionEntity extends BossEntity {
                     .map(WrappedGoal::getGoal).toList()
                     .forEach(goalSelector::removeGoal);
             if (!"static".equals(movementMode)) {
-                goalSelector.addGoal(6, new MinionBasicAttackGoal(this, 26));
+                goalSelector.addGoal(6, new MinionBasicAttackGoal(this, 20));
             }
             switch (movementMode) {
                 case "static" -> {
