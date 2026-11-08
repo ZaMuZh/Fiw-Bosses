@@ -183,16 +183,15 @@ public class IcicleRainGoal extends Goal {
         while (iterator.hasNext()) {
             ActiveIcicle icicle = iterator.next();
             FallingBlockEntity entity = icicle.entity;
-            boolean reachedImpact = entity.getY() <= icicle.impact.groundY + 1.1;
-            if (reachedImpact) {
-                // Only a projectile that actually reached the marked ground can deal
-                // impact damage. A projectile removed by chunk unload/interruption
-                // must not create a phantom explosion.
-                shatter(level, icicle.impact);
-                if (entity.isAlive()) entity.discard();
+            // A discarded projectile must never trigger a delayed impact, even if
+            // its last position happened to be below the impact threshold.
+            if (entity.isRemoved()) {
                 iterator.remove();
-            } else if (entity.isRemoved()) {
-                // Unloaded or externally removed before impact: silently forget it.
+                continue;
+            }
+            if (entity.getY() <= icicle.impact.groundY + 1.1) {
+                shatter(level, icicle.impact);
+                entity.discard();
                 iterator.remove();
             }
         }
