@@ -1009,6 +1009,11 @@ public class BossEntity extends Monster {
     private void tickGuards() {
         if (definition == null || !(level() instanceof ServerLevel sl)) return;
         tickVehicle();
+
+        // Shield guardians and their barrier are combat-critical: update them every
+        // tick, while keeping expensive arena/rage bookkeeping on its 20-tick cadence.
+        if (tracksFight() && bossState == BossState.ACTIVE) tickShield(sl);
+
         if (tickCount % 20 != 0) return;
         if (home == null) home = position();
         long now = sl.getGameTime();
@@ -1017,7 +1022,6 @@ public class BossEntity extends Monster {
             stuckTracker.reset();
             return;
         }
-        if (tracksFight()) tickShield(sl);
         tickAntiCheese(sl, now);
     }
 
