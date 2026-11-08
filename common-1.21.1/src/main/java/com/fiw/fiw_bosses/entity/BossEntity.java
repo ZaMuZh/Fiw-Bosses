@@ -105,6 +105,8 @@ public class BossEntity extends Monster {
     private BossPhaseManager phaseManager;
     private final ServerBossEvent bossBar;
     private String movementMode = "side";
+    private String pendingDisguiseEntity;
+    private int pendingDisguiseTicks;
     private final SmartMovementController movementController = new SmartMovementController(this);
 
     // Dialogue
@@ -329,6 +331,11 @@ public class BossEntity extends Monster {
             }
             entityData.set(DATA_ATTACK_ANIMATION_TICKS, animationTicks - 1);
             if (animationTicks == 1) entityData.set(DATA_ATTACK_ANIMATION, 0);
+        }
+        if (pendingDisguiseTicks > 0 && --pendingDisguiseTicks == 0) {
+            String nextDisguise = pendingDisguiseEntity;
+            pendingDisguiseEntity = null;
+            if (nextDisguise != null) setDisguiseEntity(nextDisguise);
         }
 
         if (!namedCooldowns.isEmpty()) {
@@ -1480,7 +1487,19 @@ public class BossEntity extends Monster {
     public int getAttackAnimation() { return entityData.get(DATA_ATTACK_ANIMATION); }
     public int getAttackAnimationTicks() { return entityData.get(DATA_ATTACK_ANIMATION_TICKS); }
     public void setDisguiseEntity(String entityId) {
+        pendingDisguiseEntity = null;
+        pendingDisguiseTicks = 0;
         entityData.set(DATA_DISGUISE_ENTITY, entityId != null && !"custom".equalsIgnoreCase(entityId) ? entityId : "");
+    }
+
+    /** Keep the current form during a transformation, then reveal the new disguise on cue. */
+    public void setDisguiseEntityAfterTicks(String entityId, int ticks) {
+        if (entityId == null || entityId.isBlank() || ticks <= 0) {
+            setDisguiseEntity(entityId);
+            return;
+        }
+        pendingDisguiseEntity = entityId;
+        pendingDisguiseTicks = ticks;
     }
 
     // ── Body size: the hitbox follows the disguise, `scale` and `reach` ─────────
