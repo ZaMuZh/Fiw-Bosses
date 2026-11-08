@@ -95,6 +95,10 @@ class ExampleConfigsTest {
                 "all guardian waves must total 56 Snover");
         assertEquals("snover_guard", boss.phases.get(0).shield.minion);
         assertEquals(8, boss.phases.get(0).shield.count);
+        assertEquals(5, boss.phases.get(0).abilities.size(),
+                "the opening phase must have five distinct attack patterns");
+        assertTrue(boss.phases.get(0).abilities.stream().anyMatch(a -> "ground_spike".equals(a.type)));
+        assertTrue(boss.phases.get(0).abilities.stream().anyMatch(a -> "ice_crystal".equals(a.type)));
         assertEquals(12, boss.phases.get(1).shield.count);
         assertEquals(16, boss.phases.get(2).shield.count);
         assertEquals(20, boss.phases.get(3).shield.count);
