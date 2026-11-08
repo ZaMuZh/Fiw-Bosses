@@ -44,6 +44,7 @@ public interface BossGoalFactory {
         register("fire_arrow", FireArrowGoal::new);
         register("ice_crystal", IceCrystalGoal::new);
         register("ground_spike", GroundSpikeGoal::new);
+        register("icicle_rain", IcicleRainGoal::new);
         register("lightning_radial", LightningRadialGoal::new);
         register("arrow_rain", ArrowRainGoal::new);
         register("crimson_slash", CrimsonSlashGoal::new);
