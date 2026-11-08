@@ -3,6 +3,7 @@ package com.fiw.fiw_bosses.client.renderer;
 import com.fiw.fiw_bosses.core.FiwBossesCore;
 import com.fiw.fiw_bosses.entity.BossEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -62,8 +63,42 @@ final class DisguiseRenderHelper {
         }
 
         syncFake(source, fake);
-        dispatcher.render(fake, 0.0, 0.0, 0.0, entityYaw, partialTick, poseStack, buffer, packedLight);
+
+        // A light breathing/weight-shift loop keeps the disguise from looking like
+        // a static paper cutout between attacks. Attack motion is eased separately
+        // so the anticipation and recovery don't snap.
+        float time = source.tickCount + partialTick;
+        float idleWave = (float) Math.sin(time * 0.075f);
+        float bob = (float) Math.sin(time * 0.11f) * 0.018f;
+        float idleSway = idleWave * 1.15f;
+        float attackLean = 0.0f;
+        float attackTwist = 0.0f;
+        int attackTicks = source.getAttackAnimationTicks();
+        if (attackTicks > 0) {
+            float progress = 1.0f - attackTicks / 28.0f;
+            float anticipation = smoothstep(0.0f, 0.34f, progress);
+            float strike = smoothstep(0.34f, 0.52f, progress);
+            float recovery = smoothstep(0.52f, 1.0f, progress);
+            attackLean = -7.0f * anticipation + 17.0f * strike - 10.0f * recovery;
+            attackTwist = (float) Math.sin(progress * Math.PI) * 5.5f;
+            bob += (float) Math.sin(progress * Math.PI) * 0.035f;
+        }
+
+        poseStack.pushPose();
+        poseStack.translate(0.0, bob, 0.0);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(idleSway + attackTwist));
+        poseStack.mulPose(Axis.XP.rotationDegrees(attackLean));
+        try {
+            dispatcher.render(fake, 0.0, 0.0, 0.0, entityYaw, partialTick, poseStack, buffer, packedLight);
+        } finally {
+            poseStack.popPose();
+        }
         return true;
+    }
+
+    private static float smoothstep(float edge0, float edge1, float value) {
+        float t = net.minecraft.util.Mth.clamp((value - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+        return t * t * (3.0f - 2.0f * t);
     }
 
     /**
