@@ -73,7 +73,7 @@ public class ParticleTornadoGoal extends Goal {
 
     @Override
     public void start() {
-        boss.playAttackAnimation();
+        boss.playAttackAnimation(4);
         tick = 0;
         rotation = 0;
         origin = boss.position();
