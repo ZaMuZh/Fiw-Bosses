@@ -348,9 +348,13 @@ final class DashArena {
             }
             for (Map.Entry<BlockPos, BlockState> entry : desired.entrySet()) {
                 BlockPos pos = entry.getKey();
-                if (!world.getBlockState(pos).equals(entry.getValue())) {
-                    if (!originalBlocks.containsKey(pos)) originalBlocks.put(pos.toImmutable(), world.getBlockState(pos));
-                    world.setBlockState(pos, entry.getValue(), Block.NOTIFY_ALL);
+                BlockState current = world.getBlockState(pos);
+                // Never overwrite arena construction or player-placed blocks.
+                if (current.isAir() || activePlatformBlocks.contains(pos)) {
+                    if (!world.getBlockState(pos).equals(entry.getValue())) {
+                        if (!originalBlocks.containsKey(pos)) originalBlocks.put(pos.toImmutable(), current);
+                        world.setBlockState(pos, entry.getValue(), Block.NOTIFY_ALL);
+                    }
                 }
             }
             activePlatformBlocks = next;
