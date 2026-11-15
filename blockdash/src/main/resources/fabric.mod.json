@@ -3,10 +3,10 @@
   "id": "fiw_blockdash",
   "version": "${version}",
   "name": "Fiw BlockDash",
-  "description": "Server-side moving obstacle minigame for Fabric 1.21.1.",
+  "description": "Moving obstacle minigame for Fabric 1.21.1, for dedicated servers and singleplayer worlds.",
   "authors": ["Fiw"],
   "license": "All-Rights-Reserved",
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": ["com.fiw.blockdash.FiwBlockDash"]
   },
