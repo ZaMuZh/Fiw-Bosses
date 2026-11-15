@@ -105,6 +105,7 @@ final class DashArena {
             ServerPlayerEntity player = world.getServer().getPlayerManager().getPlayer(uuid);
             if (player == null || player.getY() < Math.min(start.y, end.y) - 8) {
                 players.remove(uuid);
+                if (player != null) player.sendMessage(Text.literal("§c¡Eliminado de BlockDash!"), false);
                 continue;
             }
         }
@@ -171,6 +172,7 @@ final class DashArena {
     private static final class Wall {
         private final List<BlockDisplayEntity> blocks;
         private Vec3d position;
+        private final Set<UUID> alreadyPushed = new HashSet<>();
         Wall(List<BlockDisplayEntity> blocks, Vec3d position) { this.blocks = blocks; this.position = position; }
         void move(Vec3d delta) {
             position = position.add(delta);
@@ -186,7 +188,7 @@ final class DashArena {
                     Box obstacle = new Box(block.getX(), block.getY(), block.getZ(), block.getX() + 1, block.getY() + 1, block.getZ() + 1);
                     if (box.intersects(obstacle)) { hit = true; break; }
                 }
-                if (hit) {
+                if (hit && alreadyPushed.add(uuid)) {
                     player.addVelocity(direction.x * push, 0.22, direction.z * push);
                     player.velocityModified = true;
                 }
