@@ -136,8 +136,8 @@ public final class FiwBlockDash implements ModInitializer {
                             (ARENAS.isEmpty() ? "ninguna. Crea una con /blockdash create <id>" : String.join(", ", ARENAS.keySet()))), false);
                         return Command.SINGLE_SUCCESS;
                     }));
-            dispatcher.register(root);
-            dispatcher.register(CommandManager.literal("fiwblockdash").redirect(root));
+            var rootNode = dispatcher.register(root);
+            dispatcher.register(CommandManager.literal("fiwblockdash").redirect(rootNode));
             LOGGER.info("[Fiw BlockDash] Comandos /blockdash y /fiwblockdash registrados");
         });
     }
