@@ -126,10 +126,11 @@ final class DashArena {
         List<BlockDisplayEntity> blocks = new ArrayList<>();
         List<BlockDisplayEntity> platforms = new ArrayList<>();
         List<BlockDisplayEntity> hazards = new ArrayList<>();
-        Vec3d base = end.subtract(side.multiply(width / 2.0));
+        Vec3d base = end.subtract(side.multiply((width - 1) / 2.0));
         int pattern = random.nextInt(9);
-        BlockState primary = palette(random.nextInt(8));
-        BlockState accent = palette((random.nextInt(7) + 1 + random.nextInt(7)) % 8);
+        int paletteIndex = random.nextInt(8);
+        BlockState primary = palette(paletteIndex);
+        BlockState accent = palette((paletteIndex + 4) % 8);
 
         switch (pattern) {
             case 0 -> { // Side opening: choose left or right.
@@ -149,13 +150,14 @@ final class DashArena {
                 addPlane(blocks, hazards, base, 0, 3, firstGap, 3, -1, primary, accent);
                 addPlane(blocks, hazards, base, 2, 3, secondGap, 3, -1, primary, accent);
             }
-            case 4 -> { // A safe climbable staircase parkour; no blocking wall.
-                int center = Math.max(0, width / 2);
-                int[] depths = {-2, -1, 0, 1, 2};
-                int[] heights = {0, 1, 2, 1, 0};
-                for (int i = 0; i < depths.length; i++) {
-                    Vec3d p = base.add(side.multiply(center)).add(travel.multiply(depths[i])).add(0, heights[i], 0);
-                    addPlatform(platforms, p, primary);
+            case 4 -> {
+                int mid = Math.max(0, width / 2 - 1);
+                int[] lanes = {0, mid, Math.max(0, width - 3), mid};
+                int[] depths = {-3, -1, 1, 3};
+                int[] heights = {0, 1, 2, 1};
+                for (int i = 0; i < lanes.length; i++) {
+                    Vec3d p = base.add(side.multiply(lanes[i])).add(travel.multiply(depths[i])).add(0, heights[i], 0);
+                    addPlatform(platforms, p, i % 2 == 0 ? primary : accent, 3, 2);
                 }
             }
             case 5 -> { // Alternating low hurdles: jump left/right.
@@ -170,20 +172,22 @@ final class DashArena {
                 addPlane(blocks, hazards, base, 0, 3, left, 2, -1, primary, accent);
                 addPlane(blocks, hazards, base, 1, 3, right, 2, -1, primary, accent);
             }
-            case 7 -> { // Stepping-stone parkour with varied heights and lanes.
-                int[] lanes = {0, Math.max(0, width / 3), Math.max(0, (width * 2) / 3), Math.max(0, width - 1)};
-                int[] heights = {0, 1, 2, 1};
+            case 7 -> {
+                int mid = Math.max(0, width / 2 - 1);
+                int[] lanes = {0, mid, Math.max(0, width - 3), mid, 0};
+                int[] heights = {0, 1, 2, 1, 0};
                 for (int i = 0; i < lanes.length; i++) {
-                    Vec3d p = base.add(side.multiply(lanes[i])).add(travel.multiply(i * 2 - 2)).add(0, heights[i], 0);
-                    addPlatform(platforms, p, i % 2 == 0 ? primary : accent);
+                    Vec3d p = base.add(side.multiply(lanes[i])).add(travel.multiply(i * 2 - 4)).add(0, heights[i], 0);
+                    addPlatform(platforms, p, i % 2 == 0 ? primary : accent, 3, 2);
                 }
             }
-            default -> { // Longer zig-zag parkour bridge, alternating height and side.
-                for (int i = 0; i < 6; i++) {
-                    int lane = (i % 2 == 0) ? Math.max(0, width / 5) : Math.max(0, width - 2 - width / 5);
-                    int height = (i % 3 == 1) ? 2 : (i % 3 == 2 ? 1 : 0);
-                    Vec3d p = base.add(side.multiply(lane)).add(travel.multiply(i - 2.5)).add(0, height, 0);
-                    addPlatform(platforms, p, i % 2 == 0 ? primary : accent);
+            default -> {
+                int mid = Math.max(0, width / 2 - 1);
+                int[] lanes = {0, mid, Math.max(0, width - 3), Math.max(0, width - 3), mid, 0};
+                int[] heights = {0, 1, 2, 2, 1, 0};
+                for (int i = 0; i < lanes.length; i++) {
+                    Vec3d p = base.add(side.multiply(lanes[i])).add(travel.multiply(i * 2 - 5)).add(0, heights[i], 0);
+                    addPlatform(platforms, p, i % 2 == 0 ? primary : accent, 3, 2);
                 }
             }
         }
@@ -224,7 +228,9 @@ final class DashArena {
             for (int y = 0; y < height; y++) {
                 if (inGap && (tunnelTopRow < 0 || y < tunnelTopRow)) continue;
                 Vec3d p = base.add(side.multiply(x)).add(travel.multiply(depth)).add(0, y, 0);
-                BlockState face = (y == height - 1 || x % 4 == 0) ? accent : primary;
+                boolean frame = y == 0 || y == height - 1 || x == 0 || x == width - 1;
+                boolean accentStripe = y == 1 && x % 4 == 0;
+                BlockState face = (frame || accentStripe) ? accent : primary;
                 addDisplay(blocks, p, face);
                 hazards.add(blocks.get(blocks.size() - 1));
             }
@@ -305,28 +311,28 @@ final class DashArena {
             for (ServerPlayerEntity player : riding) {
                 player.setPosition(player.getX() + delta.x, player.getY() + delta.y, player.getZ() + delta.z);
                 Vec3d velocity = player.getVelocity();
-                player.setVelocity(velocity.x * 0.75, 0, velocity.z * 0.75);
+                player.setVelocity(velocity.x, 0, velocity.z);
                 player.setOnGround(true);
                 player.velocityModified = true;
             }
 
-            // Block displays have no vanilla collision shape. Give parkour steps
-            // a small, safe server-side landing surface so players can jump on them.
+            // One-way landing: players can jump through from below, land from above,
+            // and keep their own horizontal movement instead of being damped.
             for (UUID uuid : players) {
                 ServerPlayerEntity player = world.getServer().getPlayerManager().getPlayer(uuid);
                 if (player == null || player.getVelocity().y > 0.05) continue;
                 Box playerBox = player.getBoundingBox();
                 for (BlockDisplayEntity platform : platforms) {
                     double top = platform.getY() + 1.0;
-                    boolean horizontal = playerBox.maxX > platform.getX() + 0.05
-                        && playerBox.minX < platform.getX() + 0.95
-                        && playerBox.maxZ > platform.getZ() + 0.05
-                        && playerBox.minZ < platform.getZ() + 0.95;
+                    boolean horizontal = playerBox.maxX > platform.getX() + 0.04
+                        && playerBox.minX < platform.getX() + 0.96
+                        && playerBox.maxZ > platform.getZ() + 0.04
+                        && playerBox.minZ < platform.getZ() + 0.96;
                     double feet = player.getY();
-                    if (horizontal && feet <= top + 0.18 && feet >= top - 0.65) {
+                    if (horizontal && feet <= top + 0.10 && feet >= top - 0.95) {
                         player.setPosition(player.getX(), top, player.getZ());
                         Vec3d velocity = player.getVelocity();
-                        player.setVelocity(velocity.x * 0.55, 0, velocity.z * 0.55);
+                        player.setVelocity(velocity.x, 0, velocity.z);
                         player.setOnGround(true);
                         player.velocityModified = true;
                         break;
