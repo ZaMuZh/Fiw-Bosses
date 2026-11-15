@@ -322,11 +322,31 @@ final class DashArena {
         }
 
         void move(Vec3d delta, Set<UUID> players, ServerWorld world) {
+            // Carry grounded players with the moving physical pads, without damping their input.
+            List<ServerPlayerEntity> riding = new ArrayList<>();
+            for (UUID uuid : players) {
+                ServerPlayerEntity player = world.getServer().getPlayerManager().getPlayer(uuid);
+                if (player == null || player.getVelocity().y > 0.05) continue;
+                Box playerBox = player.getBoundingBox();
+                for (BlockPos pad : activePlatformBlocks) {
+                    double top = pad.getY() + 1.0;
+                    boolean horizontal = playerBox.maxX > pad.getX() && playerBox.minX < pad.getX() + 1.0
+                        && playerBox.maxZ > pad.getZ() && playerBox.minZ < pad.getZ() + 1.0;
+                    if (horizontal && player.getY() >= top - 0.16 && player.getY() <= top + 0.22) {
+                        riding.add(player);
+                        break;
+                    }
+                }
+            }
             position = position.add(delta);
             for (BlockDisplayEntity block : blocks) {
                 block.setPosition(block.getX() + delta.x, block.getY() + delta.y, block.getZ() + delta.z);
             }
             updatePhysicalPlatforms();
+            for (ServerPlayerEntity player : riding) {
+                player.setPosition(player.getX() + delta.x, player.getY(), player.getZ() + delta.z);
+                player.velocityModified = true;
+            }
         }
 
         private void updatePhysicalPlatforms() {
