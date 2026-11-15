@@ -125,54 +125,54 @@ final class DashArena {
         Random random = world.getRandom();
         List<BlockDisplayEntity> blocks = new ArrayList<>();
         List<BlockDisplayEntity> platforms = new ArrayList<>();
+        List<BlockDisplayEntity> hazards = new ArrayList<>();
         Vec3d base = end.subtract(side.multiply(width / 2.0));
         int pattern = random.nextInt(6);
 
         switch (pattern) {
             case 0 -> { // Side opening: choose left or right.
                 int gapStart = random.nextBoolean() ? 0 : Math.max(0, width - 3);
-                addPlane(blocks, base, 0, 3, gapStart, 3, -1);
+                addPlane(blocks, hazards, base, 0, 3, gapStart, 3, -1);
             }
             case 1 -> { // Wide central arch.
                 int gapStart = Math.max(1, width / 2 - 1);
-                addPlane(blocks, base, 0, 3, gapStart, 3, 2);
+                addPlane(blocks, hazards, base, 0, 3, gapStart, 3, 2);
             }
             case 2 -> { // Low hurdle: jump over the whole row.
-                addPlane(blocks, base, 0, 1, -1, 0, -1);
+                addPlane(blocks, hazards, base, 0, 1, -1, 0, -1);
             }
             case 3 -> { // Two offset gates make a zigzag.
                 int firstGap = random.nextInt(Math.max(1, width - 2));
                 int secondGap = (firstGap + Math.max(2, width / 2)) % Math.max(1, width - 2);
-                addPlane(blocks, base, 0, 3, firstGap, 3, -1);
-                addPlane(blocks, base, 2, 3, secondGap, 3, -1);
+                addPlane(blocks, hazards, base, 0, 3, firstGap, 3, -1);
+                addPlane(blocks, hazards, base, 2, 3, secondGap, 3, -1);
             }
             case 4 -> { // A climbable staircase over a two-block wall.
-                addPlane(blocks, base, 0, 2, -1, 0, -1);
+                addPlane(blocks, hazards, base, 0, 2, -1, 0, -1);
                 int center = Math.max(0, width / 2);
                 int[] depths = {-2, -1, 0, 1, 2};
                 int[] heights = {0, 1, 2, 1, 0};
                 for (int i = 0; i < depths.length; i++) {
                     Vec3d p = base.add(side.multiply(center)).add(travel.multiply(depths[i])).add(0, heights[i], 0);
                     addDisplay(platforms, p, Blocks.BLUE_ICE.getDefaultState());
-                    blocks.add(platforms.get(platforms.size() - 1));
                 }
             }
             default -> { // Two separated windows.
                 int left = Math.max(0, width / 4 - 1);
                 int right = Math.min(width - 2, (width * 3) / 4 - 1);
-                addPlane(blocks, base, 0, 3, left, 2, -1);
-                addPlane(blocks, base, 1, 3, right, 2, -1);
+                addPlane(blocks, hazards, base, 0, 3, left, 2, -1);
+                addPlane(blocks, hazards, base, 1, 3, right, 2, -1);
             }
         }
 
-        if (!blocks.isEmpty()) walls.add(new Wall(blocks, platforms, end));
+        if (!blocks.isEmpty()) walls.add(new Wall(blocks, platforms, hazards, end));
     }
 
     /**
      * Builds a wall plane. gapStart/gapWidth describe a full-height opening.
      * If tunnelTopRow is 2, the opening is covered by a roof, forming an arch.
      */
-    private void addPlane(List<BlockDisplayEntity> blocks, Vec3d base, int depth, int height,
+    private void addPlane(List<BlockDisplayEntity> blocks, List<BlockDisplayEntity> hazards, Vec3d base, int depth, int height,
                           int gapStart, int gapWidth, int tunnelTopRow) {
         for (int x = 0; x < width; x++) {
             boolean inGap = gapStart >= 0 && x >= gapStart && x < gapStart + gapWidth;
@@ -180,6 +180,7 @@ final class DashArena {
                 if (inGap && (tunnelTopRow < 0 || y < tunnelTopRow)) continue;
                 Vec3d p = base.add(side.multiply(x)).add(travel.multiply(depth)).add(0, y, 0);
                 addDisplay(blocks, p, Blocks.PACKED_ICE.getDefaultState());
+                hazards.add(blocks.get(blocks.size() - 1));
             }
         }
     }
@@ -220,12 +221,14 @@ final class DashArena {
     private static final class Wall {
         private final List<BlockDisplayEntity> blocks;
         private final List<BlockDisplayEntity> platforms;
+        private final List<BlockDisplayEntity> hazards;
         private Vec3d position;
         private final Set<UUID> alreadyPushed = new HashSet<>();
 
-        Wall(List<BlockDisplayEntity> blocks, List<BlockDisplayEntity> platforms, Vec3d position) {
+        Wall(List<BlockDisplayEntity> blocks, List<BlockDisplayEntity> platforms, List<BlockDisplayEntity> hazards, Vec3d position) {
             this.blocks = blocks;
             this.platforms = platforms;
+            this.hazards = hazards;
             this.position = position;
         }
 
@@ -264,7 +267,7 @@ final class DashArena {
                 if (player == null) continue;
                 Box box = player.getBoundingBox();
                 boolean hit = false;
-                for (BlockDisplayEntity block : blocks) {
+                for (BlockDisplayEntity block : hazards) {
                     Box obstacle = new Box(block.getX(), block.getY(), block.getZ(),
                         block.getX() + 1, block.getY() + 1, block.getZ() + 1);
                     if (box.intersects(obstacle)) { hit = true; break; }
