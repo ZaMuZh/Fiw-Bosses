@@ -128,24 +128,26 @@ final class DashArena {
         List<BlockDisplayEntity> hazards = new ArrayList<>();
         Vec3d base = end.subtract(side.multiply(width / 2.0));
         int pattern = random.nextInt(9);
+        BlockState primary = palette(random.nextInt(8));
+        BlockState accent = palette((random.nextInt(7) + 1 + random.nextInt(7)) % 8);
 
         switch (pattern) {
             case 0 -> { // Side opening: choose left or right.
                 int gapStart = random.nextBoolean() ? 0 : Math.max(0, width - 3);
-                addPlane(blocks, hazards, base, 0, 3, gapStart, 3, -1);
+                addPlane(blocks, hazards, base, 0, 3, gapStart, 3, -1, primary, accent);
             }
             case 1 -> { // Full-height central opening: pass without crouching.
                 int gapStart = Math.max(0, width / 2 - 1);
                 addPlane(blocks, hazards, base, 0, 3, gapStart, 3, -1);
             }
             case 2 -> { // Low hurdle: jump over the whole row.
-                addPlane(blocks, hazards, base, 0, 1, -1, 0, -1);
+                addPlane(blocks, hazards, base, 0, 1, -1, 0, -1, primary, accent);
             }
             case 3 -> { // Two offset gates make a zigzag.
                 int firstGap = random.nextInt(Math.max(1, width - 2));
                 int secondGap = (firstGap + Math.max(2, width / 2)) % Math.max(1, width - 2);
-                addPlane(blocks, hazards, base, 0, 3, firstGap, 3, -1);
-                addPlane(blocks, hazards, base, 2, 3, secondGap, 3, -1);
+                addPlane(blocks, hazards, base, 0, 3, firstGap, 3, -1, primary, accent);
+                addPlane(blocks, hazards, base, 2, 3, secondGap, 3, -1, primary, accent);
             }
             case 4 -> { // A safe climbable staircase parkour; no blocking wall.
                 int center = Math.max(0, width / 2);
@@ -153,27 +155,27 @@ final class DashArena {
                 int[] heights = {0, 1, 2, 1, 0};
                 for (int i = 0; i < depths.length; i++) {
                     Vec3d p = base.add(side.multiply(center)).add(travel.multiply(depths[i])).add(0, heights[i], 0);
-                    addDisplay(platforms, p, Blocks.BLUE_ICE.getDefaultState());
+                    addPlatform(platforms, p, primary);
                 }
             }
             case 5 -> { // Alternating low hurdles: jump left/right.
                 for (int i = 0; i < 3; i++) {
                     int lane = (i % 2 == 0) ? 0 : Math.max(0, width - 3);
-                    addPlane(blocks, hazards, base, i * 2, 1, lane, 3, -1);
+                    addPlane(blocks, hazards, base, i * 2, 1, lane, 3, -1, primary, accent);
                 }
             }
             case 6 -> { // Two full-height openings; both are passable standing.
                 int left = Math.max(0, width / 4 - 1);
                 int right = Math.min(width - 2, (width * 3) / 4 - 1);
-                addPlane(blocks, hazards, base, 0, 3, left, 2, -1);
-                addPlane(blocks, hazards, base, 1, 3, right, 2, -1);
+                addPlane(blocks, hazards, base, 0, 3, left, 2, -1, primary, accent);
+                addPlane(blocks, hazards, base, 1, 3, right, 2, -1, primary, accent);
             }
             case 7 -> { // Stepping-stone parkour with varied heights and lanes.
                 int[] lanes = {0, Math.max(0, width / 3), Math.max(0, (width * 2) / 3), Math.max(0, width - 1)};
                 int[] heights = {0, 1, 2, 1};
                 for (int i = 0; i < lanes.length; i++) {
                     Vec3d p = base.add(side.multiply(lanes[i])).add(travel.multiply(i * 2 - 2)).add(0, heights[i], 0);
-                    addDisplay(platforms, p, i % 2 == 0 ? Blocks.BLUE_ICE.getDefaultState() : Blocks.PACKED_ICE.getDefaultState());
+                    addPlatform(platforms, p, i % 2 == 0 ? primary : accent);
                 }
             }
             default -> { // Longer zig-zag parkour bridge, alternating height and side.
@@ -193,14 +195,37 @@ final class DashArena {
      * Builds a wall plane. gapStart/gapWidth describe a full-height opening.
      * If tunnelTopRow is 2, the opening is covered by a roof, forming an arch.
      */
+    private BlockState palette(int index) {
+        return switch (index) {
+            case 0 -> Blocks.RED_CONCRETE.getDefaultState();
+            case 1 -> Blocks.ORANGE_CONCRETE.getDefaultState();
+            case 2 -> Blocks.YELLOW_CONCRETE.getDefaultState();
+            case 3 -> Blocks.LIME_CONCRETE.getDefaultState();
+            case 4 -> Blocks.CYAN_CONCRETE.getDefaultState();
+            case 5 -> Blocks.BLUE_CONCRETE.getDefaultState();
+            case 6 -> Blocks.PURPLE_CONCRETE.getDefaultState();
+            default -> Blocks.MAGENTA_CONCRETE.getDefaultState();
+        };
+    }
+
+    private void addPlatform(List<BlockDisplayEntity> platforms, Vec3d origin, BlockState state) {
+        for (int a = 0; a < 2; a++) {
+            for (int b = 0; b < 2; b++) {
+                Vec3d p = origin.add(side.multiply(a)).add(travel.multiply(b));
+                addDisplay(platforms, p, state);
+            }
+        }
+    }
+
     private void addPlane(List<BlockDisplayEntity> blocks, List<BlockDisplayEntity> hazards, Vec3d base, int depth, int height,
-                          int gapStart, int gapWidth, int tunnelTopRow) {
+                          int gapStart, int gapWidth, int tunnelTopRow, BlockState primary, BlockState accent) {
         for (int x = 0; x < width; x++) {
             boolean inGap = gapStart >= 0 && x >= gapStart && x < gapStart + gapWidth;
             for (int y = 0; y < height; y++) {
                 if (inGap && (tunnelTopRow < 0 || y < tunnelTopRow)) continue;
                 Vec3d p = base.add(side.multiply(x)).add(travel.multiply(depth)).add(0, y, 0);
-                addDisplay(blocks, p, Blocks.PACKED_ICE.getDefaultState());
+                BlockState face = (y == height - 1 || x % 4 == 0) ? accent : primary;
+                addDisplay(blocks, p, face);
                 hazards.add(blocks.get(blocks.size() - 1));
             }
         }
@@ -280,7 +305,7 @@ final class DashArena {
             for (ServerPlayerEntity player : riding) {
                 player.setPosition(player.getX() + delta.x, player.getY() + delta.y, player.getZ() + delta.z);
                 Vec3d velocity = player.getVelocity();
-                player.setVelocity(velocity.x, 0, velocity.z);
+                player.setVelocity(velocity.x * 0.75, 0, velocity.z * 0.75);
                 player.setOnGround(true);
                 player.velocityModified = true;
             }
@@ -301,7 +326,7 @@ final class DashArena {
                     if (horizontal && feet <= top + 0.18 && feet >= top - 0.65) {
                         player.setPosition(player.getX(), top, player.getZ());
                         Vec3d velocity = player.getVelocity();
-                        player.setVelocity(velocity.x, 0, velocity.z);
+                        player.setVelocity(velocity.x * 0.55, 0, velocity.z * 0.55);
                         player.setOnGround(true);
                         player.velocityModified = true;
                         break;
