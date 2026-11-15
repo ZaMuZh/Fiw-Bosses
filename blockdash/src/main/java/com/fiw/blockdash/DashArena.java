@@ -138,7 +138,7 @@ final class DashArena {
             }
             case 1 -> { // Full-height central opening: pass without crouching.
                 int gapStart = Math.max(0, width / 2 - 1);
-                addPlane(blocks, hazards, base, 0, 3, gapStart, 3, -1);
+                addPlane(blocks, hazards, base, 0, 3, gapStart, 3, -1, primary, accent);
             }
             case 2 -> { // Low hurdle: jump over the whole row.
                 addPlane(blocks, hazards, base, 0, 1, -1, 0, -1, primary, accent);
@@ -183,7 +183,7 @@ final class DashArena {
                     int lane = (i % 2 == 0) ? Math.max(0, width / 5) : Math.max(0, width - 2 - width / 5);
                     int height = (i % 3 == 1) ? 2 : (i % 3 == 2 ? 1 : 0);
                     Vec3d p = base.add(side.multiply(lane)).add(travel.multiply(i - 2.5)).add(0, height, 0);
-                    addDisplay(platforms, p, i % 2 == 0 ? Blocks.BLUE_ICE.getDefaultState() : Blocks.PACKED_ICE.getDefaultState());
+                    addPlatform(platforms, p, i % 2 == 0 ? primary : accent);
                 }
             }
         }
