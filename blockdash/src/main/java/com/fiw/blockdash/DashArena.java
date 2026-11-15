@@ -127,16 +127,16 @@ final class DashArena {
         List<BlockDisplayEntity> platforms = new ArrayList<>();
         List<BlockDisplayEntity> hazards = new ArrayList<>();
         Vec3d base = end.subtract(side.multiply(width / 2.0));
-        int pattern = random.nextInt(6);
+        int pattern = random.nextInt(8);
 
         switch (pattern) {
             case 0 -> { // Side opening: choose left or right.
                 int gapStart = random.nextBoolean() ? 0 : Math.max(0, width - 3);
                 addPlane(blocks, hazards, base, 0, 3, gapStart, 3, -1);
             }
-            case 1 -> { // Wide central arch.
-                int gapStart = Math.max(1, width / 2 - 1);
-                addPlane(blocks, hazards, base, 0, 3, gapStart, 3, 2);
+            case 1 -> { // Full-height central opening: pass without crouching.
+                int gapStart = Math.max(0, width / 2 - 1);
+                addPlane(blocks, hazards, base, 0, 3, gapStart, 3, -1);
             }
             case 2 -> { // Low hurdle: jump over the whole row.
                 addPlane(blocks, hazards, base, 0, 1, -1, 0, -1);
@@ -147,8 +147,7 @@ final class DashArena {
                 addPlane(blocks, hazards, base, 0, 3, firstGap, 3, -1);
                 addPlane(blocks, hazards, base, 2, 3, secondGap, 3, -1);
             }
-            case 4 -> { // A climbable staircase over a two-block wall.
-                addPlane(blocks, hazards, base, 0, 2, -1, 0, -1);
+            case 4 -> { // A safe climbable staircase parkour; no blocking wall.
                 int center = Math.max(0, width / 2);
                 int[] depths = {-2, -1, 0, 1, 2};
                 int[] heights = {0, 1, 2, 1, 0};
@@ -157,15 +156,29 @@ final class DashArena {
                     addDisplay(platforms, p, Blocks.BLUE_ICE.getDefaultState());
                 }
             }
-            default -> { // Two separated windows.
+            case 5 -> { // Alternating low hurdles: jump left/right.
+                for (int i = 0; i < 3; i++) {
+                    int lane = (i % 2 == 0) ? 0 : Math.max(0, width - 3);
+                    addPlane(blocks, hazards, base, i * 2, 1, lane, 3, -1);
+                }
+            }
+            case 6 -> { // Two full-height openings; both are passable standing.
                 int left = Math.max(0, width / 4 - 1);
                 int right = Math.min(width - 2, (width * 3) / 4 - 1);
                 addPlane(blocks, hazards, base, 0, 3, left, 2, -1);
                 addPlane(blocks, hazards, base, 1, 3, right, 2, -1);
             }
+            default -> { // Stepping-stone parkour with varied heights and lanes.
+                int[] lanes = {0, Math.max(0, width / 3), Math.max(0, (width * 2) / 3), Math.max(0, width - 1)};
+                int[] heights = {0, 1, 2, 1};
+                for (int i = 0; i < lanes.length; i++) {
+                    Vec3d p = base.add(side.multiply(lanes[i])).add(travel.multiply(i * 2 - 2)).add(0, heights[i], 0);
+                    addDisplay(platforms, p, i % 2 == 0 ? Blocks.BLUE_ICE.getDefaultState() : Blocks.PACKED_ICE.getDefaultState());
+                }
+            }
         }
 
-        if (!blocks.isEmpty()) walls.add(new Wall(blocks, platforms, hazards, end));
+        if (!blocks.isEmpty() || !platforms.isEmpty()) walls.add(new Wall(blocks, platforms, hazards, end));
     }
 
     /**
@@ -208,7 +221,7 @@ final class DashArena {
             ServerPlayerEntity player = world.getServer().getPlayerManager().getPlayer(uuid);
             if (player == null) continue;
             if (survived) {
-                player.sendMessage(Text.literal("§a§l¡VICTORIA! §fHas sobrevivido a BlockDash."), false);
+                player.sendMessage(Text.literal("§a§l¡FELICIDADES POR SUPERAR EL DESAFÍO!"), false);
                 world.spawnParticles(ParticleTypes.FIREWORK, player.getX(), player.getY() + 1, player.getZ(), 45, 0.6, 0.8, 0.6, 0.08);
                 player.playSoundToPlayer(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundCategory.PLAYERS, 1.0f, 1.0f);
             } else {
@@ -253,6 +266,9 @@ final class DashArena {
             for (BlockDisplayEntity block : blocks) {
                 block.setPosition(block.getX() + delta.x, block.getY() + delta.y, block.getZ() + delta.z);
             }
+            for (BlockDisplayEntity platform : platforms) {
+                platform.setPosition(platform.getX() + delta.x, platform.getY() + delta.y, platform.getZ() + delta.z);
+            }
             for (ServerPlayerEntity player : riding) {
                 player.setPosition(player.getX() + delta.x, player.getY() + delta.y, player.getZ() + delta.z);
                 Vec3d velocity = player.getVelocity();
@@ -279,6 +295,9 @@ final class DashArena {
             }
         }
 
-        void remove() { for (Entity entity : blocks) entity.discard(); }
+        void remove() {
+            for (Entity entity : blocks) entity.discard();
+            for (Entity entity : platforms) entity.discard();
+        }
     }
 }
