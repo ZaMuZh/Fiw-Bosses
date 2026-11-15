@@ -1,0 +1,35 @@
+name: build-blockdash
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'blockdash/**'
+      - '.github/workflows/build-blockdash.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Build Fabric 1.21.1 mod
+        working-directory: blockdash
+        run: gradle clean build --no-daemon --stacktrace
+      - name: Upload mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: fiw-blockdash-0.1.0
+          path: blockdash/build/libs/fiw-blockdash-0.1.0.jar
+          if-no-files-found: error
+          retention-days: 30
