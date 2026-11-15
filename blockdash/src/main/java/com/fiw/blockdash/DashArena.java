@@ -179,9 +179,10 @@ final class DashArena {
         int mid = Math.max(0, width / 2 - 1);
         int left = 0;
         int right = Math.max(0, width - 3);
-        int[] lanes = style == 0 ? new int[]{left, mid, right, mid, left}
-            : style == 1 ? new int[]{mid, left, mid, right, mid}
-            : new int[]{left, left, mid, right, right, mid};
+        int safeStart = Math.min(Math.max(0, width - 3), Math.max(0, mid - 2));
+        int[] lanes = style == 0 ? new int[]{safeStart, safeStart + 2, safeStart + 1, safeStart + 2, safeStart}
+            : style == 1 ? new int[]{safeStart + 1, safeStart, safeStart + 2, safeStart + 1, safeStart}
+            : new int[]{safeStart, safeStart + 1, safeStart + 2, safeStart + 2, safeStart + 1, safeStart};
         int[] heights = style == 2 ? new int[]{0, 1, 1, 0, 1, 0} : new int[]{0, 1, 0, 1, 0};
         for (int i = 0; i < lanes.length; i++) {
             int h = heights[i % heights.length];
@@ -201,13 +202,19 @@ final class DashArena {
             for (int y = 0; y < height; y++) {
                 if (x >= gapStart && x < gapStart + gapWidth) continue;
                 boolean border = x == 0 || x == width - 1 || y == 0 || y == height - 1;
-                boolean stripe = switch (style % 4) {
+                boolean stripe = switch (style) {
                     case 0 -> x % 3 == 0;
                     case 1 -> y == 1 || y == height - 2;
-                    case 2 -> (x + y) % 4 == 0;
-                    default -> x % 2 == 0 && y % 2 == 0;
+                    case 2 -> (x + y) % 3 == 0;
+                    case 3 -> x % 2 == 0 && y % 2 == 0;
+                    case 4 -> Math.abs(x - width / 2) == y || Math.abs(x - width / 2) == y + 1;
+                    case 5 -> x % 4 == 0 || x % 4 == 1;
+                    case 6 -> (x / 2 + y) % 2 == 0;
+                    default -> (x + 2 * y) % 5 == 0;
                 };
-                BlockState face = border ? accent : stripe ? detail : primary;
+                boolean checker = style == 7 && (x + y) % 2 == 0;
+                boolean centerPanel = style == 6 && x >= width / 3 && x < (width * 2) / 3;
+                BlockState face = border ? accent : (stripe || checker || centerPanel) ? detail : primary;
                 Vec3d pos = base.add(side.multiply(x)).add(0, y, 0);
                 addDisplay(blocks, pos, face);
                 hazards.add(blocks.get(blocks.size() - 1));
