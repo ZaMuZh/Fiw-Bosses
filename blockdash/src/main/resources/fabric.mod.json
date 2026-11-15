@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "id": "fiw_blockdash",
+  "version": "${version}",
+  "name": "Fiw BlockDash",
+  "description": "Server-side moving obstacle minigame for Fabric 1.21.1.",
+  "authors": ["Fiw"],
+  "license": "All-Rights-Reserved",
+  "environment": "server",
+  "entrypoints": {
+    "main": ["com.fiw.blockdash.FiwBlockDash"]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "minecraft": "1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
