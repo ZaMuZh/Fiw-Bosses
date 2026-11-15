@@ -30,6 +30,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: fiw-blockdash-0.1.1
-          path: blockdash/build/libs/fiw-blockdash-0.1.0.jar
+          path: blockdash/build/libs/*.jar
           if-no-files-found: error
           retention-days: 30
