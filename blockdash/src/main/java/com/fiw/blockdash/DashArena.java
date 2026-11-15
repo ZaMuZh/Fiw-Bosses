@@ -1,6 +1,8 @@
 package com.fiw.blockdash;
 
 import net.minecraft.block.Blocks;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.decoration.DisplayEntity.BlockDisplayEntity;
@@ -24,7 +26,7 @@ import java.util.UUID;
 
 final class DashArena {
     final String id;
-    int width =  nine();
+    int width = 9;
     int durationSeconds = 90;
     int spawnInterval = 50;
     double startSpeed = 2.0;
@@ -44,7 +46,6 @@ final class DashArena {
 
     DashArena(String id) { this.id = id; }
 
-    private static int nine() { return 9; }
 
     void setStart(ServerWorld world, Vec3d pos) {
         this.world = world;
@@ -136,7 +137,9 @@ final class DashArena {
                 Vec3d p = base.add(side.multiply(x)).add(0, y, 0);
                 BlockDisplayEntity display = (BlockDisplayEntity) EntityType.BLOCK_DISPLAY.create(world);
                 if (display == null) continue;
-                display.setBlockState(Blocks.PACKED_ICE.getDefaultState());
+                NbtCompound displayData = new NbtCompound();
+                displayData.put(BlockDisplayEntity.BLOCK_STATE_NBT_KEY, NbtHelper.fromBlockState(Blocks.PACKED_ICE.getDefaultState()));
+                display.readNbt(displayData);
                 display.setNoGravity(true);
                 display.setInvulnerable(true);
                 display.refreshPositionAndAngles(p.x, p.y, p.z, 0, 0);
