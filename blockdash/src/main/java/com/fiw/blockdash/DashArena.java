@@ -346,18 +346,19 @@ final class DashArena {
                     if (original != null) world.setBlockState(old, original, Block.NOTIFY_ALL);
                 }
             }
+            Set<BlockPos> placed = new HashSet<>();
             for (Map.Entry<BlockPos, BlockState> entry : desired.entrySet()) {
                 BlockPos pos = entry.getKey();
-                BlockState current = world.getBlockState(pos);
-                // Never overwrite arena construction or player-placed blocks.
-                if (current.isAir() || activePlatformBlocks.contains(pos)) {
+                BlockState original = originalBlocks.get(pos);
+                // Only use air positions. Never replace arena construction or player blocks.
+                if (original != null && original.isAir()) {
                     if (!world.getBlockState(pos).equals(entry.getValue())) {
-                        if (!originalBlocks.containsKey(pos)) originalBlocks.put(pos.toImmutable(), current);
                         world.setBlockState(pos, entry.getValue(), Block.NOTIFY_ALL);
                     }
+                    placed.add(pos);
                 }
             }
-            activePlatformBlocks = next;
+            activePlatformBlocks = placed;
         }
 
         private Vec3d initialPosition = Vec3d.ZERO;
