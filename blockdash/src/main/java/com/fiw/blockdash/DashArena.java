@@ -208,9 +208,9 @@ final class DashArena {
         };
     }
 
-    private void addPlatform(List<BlockDisplayEntity> platforms, Vec3d origin, BlockState state) {
-        for (int a = 0; a < 2; a++) {
-            for (int b = 0; b < 2; b++) {
+    private void addPlatform(List<BlockDisplayEntity> platforms, Vec3d origin, BlockState state, int sideWidth, int depthLength) {
+        for (int a = 0; a < sideWidth; a++) {
+            for (int b = 0; b < depthLength; b++) {
                 Vec3d p = origin.add(side.multiply(a)).add(travel.multiply(b));
                 addDisplay(platforms, p, state);
             }
