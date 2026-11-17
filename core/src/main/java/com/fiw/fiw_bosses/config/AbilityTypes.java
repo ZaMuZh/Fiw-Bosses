@@ -13,7 +13,7 @@ public final class AbilityTypes {
             "heal", "charge", "pull", "swap", "summon_minions", "ranged_projectile", "meteor", "slam",
             "shockwave", "beam", "chain_lightning", "sonic_boom", "slash_wave", "freeze", "arc_slash",
             "particle_tornado", "orbital", "fire_arrow", "ice_crystal", "ground_spike",
-            "lightning_radial", "arrow_rain", "crimson_slash", "orb_throw", "tracking_orb",
+            "lightning_radial", "arrow_rain", "icicle_rain", "crimson_slash", "orb_throw", "tracking_orb",
             "detect_mark", "judgment_mark", "divine_execution", "essence_absorption",
             "guardian_shield", "moving_tornado", "phantom_dash", "potion_field",
             "singularity_cannon", "domain", "rift_cleave", "fear_burst", "mirror_image",

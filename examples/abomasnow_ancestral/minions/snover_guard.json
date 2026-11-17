@@ -1,0 +1,36 @@
+{
+  "id": "snover_guard",
+  "displayName": "&b&lSnover guardián",
+  "baseEntity": "custom",
+  "health": 40,
+  "armor": 3,
+  "speed": 0.32,
+  "knockbackResistance": 0.15,
+  "attackDamage": 9,
+  "movement": "normal",
+  "scale": 1,
+  "skin": {
+    "type": "file",
+    "value": "snover_guard.png",
+    "slim": false
+  },
+  "teleportWhenStuck": true,
+  "stuckSeconds": 6,
+  "faction": "abomasnow_glacier",
+  "damageFactionAllies": false,
+  "targetFactionAllies": false,
+  "damageOwnGroup": false,
+  "abilities": [
+    {
+      "type": "melee_slash",
+      "cooldownTicks": 30,
+      "params": {
+        "range": 4.8,
+        "arc": 170,
+        "damage": 12
+      }
+    }
+  ],
+  "loot": [],
+  "renderEntity": "cobblemon:pokemon:snover"
+}

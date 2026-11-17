@@ -13,12 +13,18 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.EnumSet;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 public class ParticleTornadoGoal extends Goal {
 
@@ -41,6 +47,7 @@ public class ParticleTornadoGoal extends Goal {
     private int tick;
     private double rotation;
     private Vec3 origin;
+    private final Set<UUID> launched = new HashSet<>();
 
     public ParticleTornadoGoal(BossEntity boss, int cooldownTicks, JsonObject params) {
         this.boss          = boss;
@@ -73,9 +80,11 @@ public class ParticleTornadoGoal extends Goal {
 
     @Override
     public void start() {
+        boss.playAttackAnimation(4);
         tick = 0;
         rotation = 0;
         origin = boss.position();
+        launched.clear();
 
         if (!boss.level().isClientSide) {
             ServerLevel level = (ServerLevel) boss.level();
@@ -116,7 +125,7 @@ public class ParticleTornadoGoal extends Goal {
             double diskY      = origin.y + t * height;
             double diskRadius = maxRadius * t;          // funnel: narrow at base, wide at top
 
-            int points = Math.max(6, (int) (diskRadius * 6));
+            int points = Math.min(30, Math.max(8, (int) (diskRadius * 2.4)));
             double twist = Math.toRadians(d * twistPerDisk);   // per-disk spiral => visible spin
             for (int p = 0; p < points; p++) {
                 double angle = rotRad + twist + Math.toRadians((360.0 / points) * p);
@@ -133,18 +142,46 @@ public class ParticleTornadoGoal extends Goal {
                 origin.x, origin.y + 0.1, origin.z,
                 3, maxRadius * 0.4, 0.1, maxRadius * 0.4, 0.02);
 
+        int launchTick = Math.max(30, duration * 3 / 4);
+        if (tick == launchTick) {
+            AABB launchBox = new AABB(origin.x - maxRadius - 2, origin.y - 2.0, origin.z - maxRadius - 2,
+                                      origin.x + maxRadius + 2, origin.y + height + 2.0, origin.z + maxRadius + 2);
+            List<LivingEntity> caught = level.getEntitiesOfClass(LivingEntity.class, launchBox,
+                    e -> boss.canAbilityHit(e) && isInsideTornado(e));
+            for (LivingEntity entity : caught) {
+                Vec3 outward = new Vec3(entity.getX() - origin.x, 0.0, entity.getZ() - origin.z);
+                if (outward.lengthSqr() < 0.04) outward = new Vec3(boss.getLookAngle().x, 0.0, boss.getLookAngle().z);
+                outward = outward.normalize();
+                entity.setDeltaMovement(outward.x * 2.65, 1.12, outward.z * 2.65);
+                if (damage > 0) boss.dealAbilityDamage(entity, boss.damageSources().mobAttack(boss), 5.0f);
+                entity.hurtMarked = true;
+                launched.add(entity.getUUID());
+                level.sendParticles(ParticleTypes.CLOUD, entity.getX(), entity.getY() + 0.8, entity.getZ(), 18, 0.5, 0.5, 0.5, 0.22);
+                level.sendParticles(ParticleTypes.SNOWFLAKE, entity.getX(), entity.getY() + 1.0, entity.getZ(), 22, 0.7, 0.8, 0.7, 0.18);
+            }
+            level.playSound(null, origin.x, origin.y, origin.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 2.0f, 0.65f);
+        }
+
         if ((damage > 0 || fire) && tick % 5 == 0) {
-            AABB funnel = new AABB(origin.x - maxRadius, origin.y, origin.z - maxRadius,
-                                   origin.x + maxRadius, origin.y + height, origin.z + maxRadius);
+            AABB funnel = new AABB(origin.x - maxRadius - 2, origin.y - 2.0, origin.z - maxRadius - 2,
+                                   origin.x + maxRadius + 2, origin.y + height + 2.0, origin.z + maxRadius + 2);
             List<LivingEntity> inside = level.getEntitiesOfClass(LivingEntity.class, funnel,
                     e -> boss.canAbilityHit(e)
                          && isInsideTornado(e));
             for (LivingEntity entity : inside) {
                 if (damage > 0) boss.dealAbilityDamage(entity, boss.damageSources().mobAttack(boss), damage);
                 if (fire) entity.setRemainingFireTicks(Math.max(entity.getRemainingFireTicks(), fireSeconds * 20));
-                Vec3 toCenter = origin.subtract(entity.position()).normalize();
-                entity.push(toCenter.x * 0.3, 0.15, toCenter.z * 0.3);
-                entity.hurtMarked = true;
+                if (entity instanceof Player player && !player.isCreative() && !player.isSpectator()) {
+                    player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 24, 0, true, true));
+                }
+                if (!launched.contains(entity.getUUID()) && tick < launchTick) {
+                    Vec3 inward = new Vec3(origin.x - entity.getX(), 0.0, origin.z - entity.getZ()).normalize();
+                    Vec3 swirl = new Vec3(-inward.z, 0.0, inward.x);
+                    Vec3 velocity = entity.getDeltaMovement().scale(0.55)
+                            .add(inward.x * 0.42 + swirl.x * 0.24, 0.34, inward.z * 0.42 + swirl.z * 0.24);
+                    entity.setDeltaMovement(velocity);
+                    entity.hurtMarked = true;
+                }
             }
         }
 
@@ -170,9 +207,11 @@ public class ParticleTornadoGoal extends Goal {
 
     private boolean isInsideTornado(LivingEntity entity) {
         double relY = entity.getY() - origin.y;
-        if (relY < 0 || relY > height) return false;
-        double t = relY / height;
-        double allowedRadius = maxRadius * t + 1.0;
+        if (relY < -1.5 || relY > height + 2.0) return false;
+        double t = net.minecraft.util.Mth.clamp(relY / height, 0.0, 1.0);
+        // The funnel is deliberately broad at ground level so players inside the
+        // visible storm are actually caught; it narrows toward the eye near the top.
+        double allowedRadius = maxRadius * (0.65 + 0.35 * t) + 1.5;
         double dx = entity.getX() - origin.x;
         double dz = entity.getZ() - origin.z;
         return dx * dx + dz * dz <= allowedRadius * allowedRadius;

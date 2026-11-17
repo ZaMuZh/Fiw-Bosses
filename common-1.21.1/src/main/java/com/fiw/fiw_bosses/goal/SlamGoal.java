@@ -59,6 +59,7 @@ public class SlamGoal extends Goal {
 
     @Override
     public void start() {
+        boss.playAttackAnimation(3);
         tick = 0;
         slamDone = false;
 

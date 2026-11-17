@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -101,7 +102,7 @@ public class BossPhaseManager {
     public void restoreToPhase(int newIndex) {
         if (newIndex < 0 || newIndex >= phases.size()) return;
         currentPhaseIndex = newIndex;
-        applyEffective();
+        applyEffective(false);
     }
 
     public void transitionToPhase(int newIndex) {
@@ -116,7 +117,7 @@ public class BossPhaseManager {
             playTransitionEffects(phase);
         }
 
-        applyEffective();
+        applyEffective(!isInitial);
 
         if (!isInitial && !boss.level().isClientSide) {
             FiwToolsBridge.onBossPhaseChange(boss, boss.getBossId(), newIndex + 1, previousIndex + 1);
@@ -147,7 +148,11 @@ public class BossPhaseManager {
 
         // === TARGETING ===
         boss.getTargetSelector().addGoal(1, new AllyAwareHurtByTargetGoal(boss));
-        boss.getTargetSelector().addGoal(2, new NearestAttackableTargetGoal<>(boss, Player.class, true));
+        // Minions are defensive guards: they retaliate when attacked, but must
+        // never acquire nearby players as targets by proximity.
+        if (!(boss instanceof MinionEntity)) {
+            boss.getTargetSelector().addGoal(2, new NearestAttackableTargetGoal<>(boss, Player.class, true));
+        }
 
         // === ABILITY GOALS ===
         int priority = 1;
@@ -212,6 +217,12 @@ public class BossPhaseManager {
 
     private void playTransitionEffects(PhaseDefinition phase) {
         ServerLevel level = (ServerLevel) boss.level();
+        // Give every phase change a visible body cue, not just a chat line and particles.
+        boolean megaEvolution = phase.renderEntity != null
+                && (phase.renderEntity.contains("mega_evolution=mega")
+                || phase.renderEntity.contains("aspects=mega")
+                || phase.renderEntity.contains("form=mega"));
+        boss.playAttackAnimation(megaEvolution ? 7 : 6);
 
         if (phase.transitionMessage != null && !phase.transitionMessage.isEmpty()) {
             Component message = TextUtil.parseColorCodes(phase.transitionMessage);
@@ -237,6 +248,30 @@ public class BossPhaseManager {
             level.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
                     boss.getX(), boss.getY() + 1.0, boss.getZ(),
                     3, 0.5, 0.5, 0.5, 0.1);
+        }
+
+        // The Mega form gets a glacial ignition; the actual model swap is delayed to the animation climax.
+        if (phase.renderEntity != null && (phase.renderEntity.contains("mega_evolution=mega")
+                || phase.renderEntity.contains("aspects=mega") || phase.renderEntity.contains("form=mega"))) {
+            level.playSound(null, boss.getX(), boss.getY(), boss.getZ(),
+                    SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 2.2f, 0.55f);
+            level.sendParticles(ParticleTypes.SNOWFLAKE,
+                    boss.getX(), boss.getY() + 1.5, boss.getZ(),
+                    150, 2.8, 2.0, 2.8, 0.16);
+            level.sendParticles(ParticleTypes.END_ROD,
+                    boss.getX(), boss.getY() + 1.5, boss.getZ(),
+                    70, 1.8, 1.5, 1.8, 0.08);
+            for (int ring = 0; ring < 3; ring++) {
+                double radius = 2.0 + ring * 1.25;
+                double y = boss.getY() + 0.35 + ring * 0.9;
+                for (int point = 0; point < 32; point++) {
+                    double angle = Math.PI * 2.0 * point / 32.0 + ring * 0.35;
+                    level.sendParticles(ParticleTypes.SNOWFLAKE,
+                            boss.getX() + Math.cos(angle) * radius, y,
+                            boss.getZ() + Math.sin(angle) * radius,
+                            1, 0, 0.02, 0, 0);
+                }
+            }
         }
     }
 
@@ -266,7 +301,7 @@ public class BossPhaseManager {
         activeRage = name;
         activeRageJson = json;
         if (currentPhaseIndex < 0) return;
-        applyEffective();
+        applyEffective(false);
         if (playEffects && !boss.level().isClientSide()) {
             playTransitionEffects(PhaseOverlay.merge(null, json));
         }
@@ -279,7 +314,7 @@ public class BossPhaseManager {
         activeRage = null;
         activeRageJson = null;
         if (currentPhaseIndex < 0) return;
-        applyEffective();
+        applyEffective(false);
         if (rageGear && phases.get(currentPhaseIndex).equipment == null) {
             // Put back the gear the boss wore before the rage: the latest HP phase that set
             // equipment, else the boss's base equipment.
@@ -298,10 +333,10 @@ public class BossPhaseManager {
 
     /** Rebuilds goals/modifiers/equipment for the phase in effect (after load). */
     public void refresh() {
-        if (currentPhaseIndex >= 0) applyEffective();
+        if (currentPhaseIndex >= 0) applyEffective(false);
     }
 
-    private void applyEffective() {
+    private void applyEffective(boolean animateMega) {
         PhaseDefinition hp = phases.get(currentPhaseIndex);
         effective = activeRageJson != null ? PhaseOverlay.merge(hp, activeRageJson) : null;
         PhaseDefinition phase = effective != null ? effective : hp;
@@ -309,6 +344,29 @@ public class BossPhaseManager {
         applyStatModifiers(phase);
         if (phase.equipment != null) {
             boss.applyEquipment(phase.equipment);
+        }
+
+        // A phase can override the boss's visual disguise (for example, Mega Abomasnow).
+        // Empty phase values restore the disguise configured on the boss definition.
+        BossDefinition definition = boss.getDefinition();
+        String disguise = phase.renderEntity;
+        if (disguise == null || disguise.isBlank()) {
+            disguise = definition != null && definition.renderEntity != null && !definition.renderEntity.isBlank()
+                    ? definition.renderEntity
+                    : definition != null ? definition.baseEntity : "custom";
+        }
+        boolean megaDisguise = disguise.contains("mega_evolution=mega")
+                || disguise.contains("aspects=mega") || disguise.contains("form=mega");
+        if (animateMega && megaDisguise) {
+            String baseDisguise = definition != null && definition.renderEntity != null
+                    && !definition.renderEntity.isBlank()
+                    ? definition.renderEntity
+                    : definition != null ? definition.baseEntity : "custom";
+            boss.setDisguiseEntity(baseDisguise);
+            // Reveal the Mega model at the climax of the 90-tick animation.
+            boss.setDisguiseEntityAfterTicks(disguise, 66);
+        } else {
+            boss.setDisguiseEntity(disguise);
         }
     }
 }

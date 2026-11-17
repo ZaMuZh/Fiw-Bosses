@@ -17,6 +17,8 @@ public class PhaseDefinition {
     public Map<String, Float> protection;
     public List<AbilityEntry> abilities = new ArrayList<>();
     public List<MinionEntry> minions = new ArrayList<>();
+    // Optional per-phase visual disguise (e.g. Cobblemon Mega form during the final phase).
+    public String renderEntity;
     public EquipmentConfig equipment;
     // Optional shield: the boss is immune until these pylons are destroyed.
     public ShieldConfig shield;

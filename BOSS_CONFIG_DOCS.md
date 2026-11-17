@@ -101,6 +101,7 @@ Bosses are defined as `.json` files — no coding or server restart needed.
   - [`tracking_orb`](#tracking_orb)
   - [`moving_tornado`](#moving_tornado)
   - [`ground_spike`](#ground_spike)
+  - [`icicle_rain`](#icicle_rain)
   - [`arrow_rain`](#arrow_rain)
   - [`potion_field`](#potion_field)
   - [`detect_mark`](#detect_mark)
@@ -185,7 +186,7 @@ Bosses are defined as `.json` files — no coding or server restart needed.
 | `displayName` | string | **required** | Shown above head and in the boss bar. Supports `&` color codes |
 | `health` | float | 200.0 | Max HP. Any value works — see [Health above 1024](#health-above-1024) |
 | `baseEntity` | string | `"custom"` | Boss visual base. Bosses always use the custom boss entity for AI/abilities; a registry ID here makes it render like that mob |
-| `renderEntity` | string | null | Optional visual override. Use this when you want to keep `baseEntity: "custom"` but render the boss as a vanilla/modded mob |
+| `renderEntity` | string | null | Optional visual override. Use this with `baseEntity: "custom"` to render as a vanilla/modded mob. Cobblemon species use `cobblemon:pokemon:<species>` (for example `cobblemon:pokemon:abomasnow`). Optional properties such as `form=mega` may follow the species. |
 | `scale` | float | 1.0 | Size of model **and** hitbox: `2.0` = twice as big, `0.5` = half. Range 0.0625-16 (clamped). See [Size and hitbox](#size-and-hitbox) |
 | `reach` | float | 0.0 | Extra melee reach in blocks (0-16) on top of normal reach |
 | `armor` | float | 0.0 | Armor points (iron chestplate ≈ 8) |
@@ -414,6 +415,7 @@ Phases change the boss's behavior at HP thresholds. Define them from **highest t
 | `minions` | array | [] | Minion types available for `summon_minions` |
 | `equipment` | object | null | Override gear for this phase |
 | `shield` | object | null | Shield phase — see [Shield Phase (Pylons)](#shield-phase-pylons) |
+| `renderEntity` | string | null | Optional visual override for this phase only. Use e.g. `cobblemon:pokemon:abomasnow form=mega` to switch to a Cobblemon form when the phase starts; an empty value restores the boss-level disguise. |
 | `protection` | object | null | Per-phase damage protection overrides — merged key-by-key over the boss-level `protection` map |
 | `transitionMessage` | string | null | Chat message sent to nearby players |
 | `transitionSound` | string | null | Sound ID played on transition |
@@ -1403,6 +1405,34 @@ A tornado appears in front of the boss and advances toward the target for a fixe
 ```
 
 ---
+
+### `icicle_rain`
+
+A targeted ice bombardment. The boss first marks every impact point with a pulsing ring, then sends real falling ice blocks down from above. Each impact bursts into ice fragments and damages entities caught near the marked point.
+
+| Param | Default | Description |
+|-------|---------|-------------|
+| `radius` | 10.0 | Spread radius around the target |
+| `height` | 20 | Height above the ground from which each icicle falls |
+| `icicleCount` | 18 | Number of falling icicles |
+| `damage` | 8.0 | Damage dealt near each impact |
+| `warnTicks` | 30 | Warning-mark duration before the rain starts |
+| `rainTicks` | 25 | Time window over which the icicles are released |
+
+```json
+{
+  "type": "icicle_rain",
+  "cooldownTicks": 160,
+  "params": {
+    "radius": 12.0,
+    "height": 22,
+    "icicleCount": 20,
+    "damage": 6.0,
+    "warnTicks": 32,
+    "rainTicks": 28
+  }
+}
+```
 
 ### `ground_spike`
 

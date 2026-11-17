@@ -24,7 +24,10 @@ public final class NetworkHandler {
 
     public static void sendSkinToPlayer(ServerPlayer player, BossEntity boss) {
         String disguise = sendRenderToPlayer(player, boss);
-        if (!disguise.isBlank()) return;
+        // Cobblemon disguises get a skin payload too, so the custom FIW skin can act as
+        // a fallback if the client cannot construct the reflective PokemonEntity.
+        boolean cobblemonDisguise = disguise.startsWith("cobblemon:pokemon:");
+        if (!disguise.isBlank() && !cobblemonDisguise) return;
 
         if (boss.getBossId() == null) return;
 

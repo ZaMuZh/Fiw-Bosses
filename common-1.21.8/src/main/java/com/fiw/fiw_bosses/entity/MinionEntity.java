@@ -121,18 +121,17 @@ public class MinionEntity extends BossEntity {
     // ── Death / loot ─────────────────────────────────────────────────────────
 
     @Override
+    protected boolean dropsBossLoot() { return false; }
+
+    @Override
     public void die(DamageSource damageSource) {
         // Drop minion-specific loot instead of boss loot
         if (!level().isClientSide() && minionDef != null && minionDef.loot != null) {
             BossLootHandler.dropLootEntries(this, minionDef.loot);
         }
-        // Skip BossEntity.die() boss loot — call Monster.die() directly
-        // We need to remove bossbar and call LivingEntity death logic
-        superDie(damageSource);
-    }
-
-    private void superDie(DamageSource damageSource) {
-        // Call the grandparent (Monster) die, skipping BossEntity's boss-loot drop
+        // BossEntity.die() performs the normal entity death and boss-bar cleanup.
+        // Its dropsBossLoot()/tracksFight() hooks are overridden above, so this
+        // minion cannot trigger boss loot, raid rewards, or encounter completion.
         super.die(damageSource);
     }
 

@@ -74,6 +74,7 @@ public class GroundSpikeGoal extends Goal {
 
     @Override
     public void start() {
+        boss.playAttackAnimation(3);
         tick = 0;
         active = true;
         phase = 0;

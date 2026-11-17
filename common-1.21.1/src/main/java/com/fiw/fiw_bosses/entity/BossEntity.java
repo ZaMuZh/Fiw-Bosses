@@ -90,6 +90,11 @@ public class BossEntity extends Monster {
     // Synced so the client (Jade, WTHIT, The One Probe, ...) reads the real max health too.
     private static final EntityDataAccessor<Float> DATA_CONFIGURED_MAX_HEALTH =
             SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.FLOAT);
+    // Small synchronized animation channel consumed by the client disguise renderer.
+    private static final EntityDataAccessor<Integer> DATA_ATTACK_ANIMATION =
+            SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ATTACK_ANIMATION_TICKS =
+            SynchedEntityData.defineId(BossEntity.class, EntityDataSerializers.INT);
 
     // ── Boss state ────────────────────────────────────────────────────────────
     public enum BossState { INACTIVE, PRE_FIGHT, ACTIVE, PRE_DEATH }
@@ -100,6 +105,8 @@ public class BossEntity extends Monster {
     private BossPhaseManager phaseManager;
     private final ServerBossEvent bossBar;
     private String movementMode = "side";
+    private String pendingDisguiseEntity;
+    private int pendingDisguiseTicks;
     private final SmartMovementController movementController = new SmartMovementController(this);
 
     // Dialogue
@@ -301,6 +308,8 @@ public class BossEntity extends Monster {
         super.defineSynchedData(builder);
         builder.define(DATA_DISGUISE_ENTITY, "");
         builder.define(DATA_CONFIGURED_MAX_HEALTH, 0.0f);
+        builder.define(DATA_ATTACK_ANIMATION, 0);
+        builder.define(DATA_ATTACK_ANIMATION_TICKS, 0);
     }
 
     // ── Tick ─────────────────────────────────────────────────────────────────
@@ -314,6 +323,20 @@ public class BossEntity extends Monster {
         }
 
         super.customServerAiStep();
+
+        int animationTicks = entityData.get(DATA_ATTACK_ANIMATION_TICKS);
+        if (animationTicks > 0) {
+            if (entityData.get(DATA_ATTACK_ANIMATION) == 7 && level() instanceof ServerLevel serverLevel) {
+                tickMegaEvolutionVisual(serverLevel, animationTicks);
+            }
+            entityData.set(DATA_ATTACK_ANIMATION_TICKS, animationTicks - 1);
+            if (animationTicks == 1) entityData.set(DATA_ATTACK_ANIMATION, 0);
+        }
+        if (pendingDisguiseTicks > 0 && --pendingDisguiseTicks == 0) {
+            String nextDisguise = pendingDisguiseEntity;
+            pendingDisguiseEntity = null;
+            if (nextDisguise != null) setDisguiseEntity(nextDisguise);
+        }
 
         if (!namedCooldowns.isEmpty()) {
             namedCooldowns.replaceAll((k, v) -> v - 1);
@@ -338,6 +361,42 @@ public class BossEntity extends Monster {
             phaseManager.tick();
         }
         tickGuards();
+    }
+
+    /**
+     * Server-driven frost spiral for the Mega reveal. The client receives ordinary
+     * particles, so the effect is visible to every player without a custom packet.
+     */
+    private void tickMegaEvolutionVisual(ServerLevel level, int remainingTicks) {
+        int elapsed = 90 - remainingTicks;
+        float progress = net.minecraft.util.Mth.clamp(elapsed / 90.0f, 0.0f, 1.0f);
+        if (tickCount % 2 == 0) {
+            double radius = 0.75 + progress * 2.35;
+            double yBase = getY() + 0.25 + progress * 2.25;
+            for (int point = 0; point < 10; point++) {
+                double angle = Math.toRadians(tickCount * 13.0 + point * 36.0);
+                double helix = Math.sin(angle * 1.8 + progress * Math.PI * 4.0) * 0.35;
+                double x = getX() + Math.cos(angle) * radius;
+                double z = getZ() + Math.sin(angle) * radius;
+                double y = yBase + helix;
+                level.sendParticles(ParticleTypes.SNOWFLAKE, x, y, z, 1, 0.015, 0.025, 0.015, 0.005);
+                if (point % 2 == 0) {
+                    level.sendParticles(ParticleTypes.END_ROD, x, y, z, 1, 0, 0.015, 0, 0);
+                }
+            }
+        }
+
+        // The energy reaches critical mass near the end, then bursts as the Mega form appears.
+        if (remainingTicks == 24) {
+            level.playSound(null, getX(), getY(), getZ(),
+                    SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 1.8f, 0.72f);
+            level.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
+                    getX(), getY() + 1.0, getZ(), 1, 0, 0, 0, 0);
+            level.sendParticles(ParticleTypes.CLOUD,
+                    getX(), getY() + 1.0, getZ(), 34, 1.1, 0.7, 1.1, 0.12);
+            level.sendParticles(ParticleTypes.SNOWFLAKE,
+                    getX(), getY() + 1.4, getZ(), 64, 1.4, 1.0, 1.4, 0.18);
+        }
     }
 
     protected boolean showBossBar() { return true; }
@@ -620,14 +679,19 @@ public class BossEntity extends Monster {
     @Override
     public void checkDespawn() { /* bosses never auto-despawn */ }
 
+    /** Whether this entity should drop the configured boss loot table on death. */
+    protected boolean dropsBossLoot() { return true; }
+
     @Override
     public void die(DamageSource damageSource) {
         if (pendingHitter != null) {
             creditDamage(pendingHitter, healthBeforeHit);
             pendingHitter = null;
         }
+        // Guardian minions belong to this encounter; never leave them behind after the boss dies.
+        if (level() instanceof ServerLevel sl) clearShieldPylons(sl);
         super.die(damageSource);
-        if (!level().isClientSide && definition != null) {
+        if (!level().isClientSide && definition != null && dropsBossLoot()) {
             if (tracksFight()) BossFightHandler.onBossDeath(this, damageSource);
             else BossLootHandler.dropLoot(this, definition);
         }
@@ -636,6 +700,9 @@ public class BossEntity extends Monster {
 
     @Override
     public void remove(RemovalReason reason) {
+        if (reason.shouldDestroy() && level() instanceof ServerLevel sl) {
+            clearShieldPylons(sl);
+        }
         super.remove(reason);
         bossBar.removeAllPlayers();
         // Killed or discarded (not unloaded): no longer counts toward spawnLimits.maxAlive.
@@ -862,13 +929,67 @@ public class BossEntity extends Monster {
             armShield(sl, phase.shield);
             return;
         }
-        // Give pylons a few seconds to load back in after a restart before counting them.
-        if (!shieldActive || tickCount < 100) return;
+        if (!shieldActive) return;
         shieldPylons.removeIf(id -> {
             Entity e = sl.getEntity(id);
             return e == null || !e.isAlive();
         });
-        if (shieldPylons.isEmpty()) dropShield(true);
+        if (shieldPylons.isEmpty()) {
+            dropShield(true);
+            return;
+        }
+        tickShieldVisual(sl, phase.shield);
+    }
+
+    /**
+     * Snow-glass barrier around the boss, with a visible energy tether to every living
+     * guardian. The shell loses rings and density as guardians are defeated.
+     */
+    private void tickShieldVisual(ServerLevel sl, ShieldConfig cfg) {
+        if (tickCount % 5 != 0) return;
+
+        int remaining = shieldPylons.size();
+        double strength = Math.max(0.08, Math.min(1.0, (double) remaining / Math.max(1, cfg.count)));
+        int rings = Math.max(1, (int) Math.ceil(3.0 * strength));
+        int points = Math.max(6, (int) Math.round(18.0 * strength));
+        double radius = 2.15 + (1.0 - strength) * 0.7;
+        double baseY = getY() + 0.35;
+        double height = 2.8;
+
+        for (int ring = 0; ring < rings; ring++) {
+            double y = baseY + (rings == 1 ? height * 0.5 : height * ring / (rings - 1.0));
+            double rotation = tickCount * 2.5 + ring * 18.0;
+            for (int p = 0; p < points; p++) {
+                double angle = Math.toRadians(rotation + p * (360.0 / points));
+                double px = getX() + Math.cos(angle) * radius;
+                double pz = getZ() + Math.sin(angle) * radius;
+                sl.sendParticles(ParticleTypes.SNOWFLAKE, px, y, pz, 1, 0, 0.015, 0, 0);
+                if ((p + ring) % 3 == 0) {
+                    sl.sendParticles(ParticleTypes.END_ROD, px, y, pz, 1, 0, 0, 0, 0);
+                }
+            }
+        }
+
+        // A tether for each guardian makes the source of the protection obvious.
+        for (UUID id : shieldPylons) {
+            Entity guardian = sl.getEntity(id);
+            if (guardian == null || !guardian.isAlive()) continue;
+            double x1 = getX();
+            double y1 = getY() + 1.55;
+            double z1 = getZ();
+            double x2 = guardian.getX();
+            double y2 = guardian.getY() + Math.max(0.4, guardian.getBbHeight() * 0.6);
+            double z2 = guardian.getZ();
+            int steps = 4;
+            for (int step = 0; step <= steps; step++) {
+                double t = step / (double) steps;
+                sl.sendParticles(ParticleTypes.END_ROD,
+                        x1 + (x2 - x1) * t,
+                        y1 + (y2 - y1) * t,
+                        z1 + (z2 - z1) * t,
+                        1, 0, 0, 0, 0);
+            }
+        }
     }
 
     private void armShield(ServerLevel sl, ShieldConfig cfg) {
@@ -892,19 +1013,45 @@ public class BossEntity extends Monster {
             pylon.moveTo(x, y, z, getRandom().nextFloat() * 360, 0);
             pylon.applyMinionDefinition(def, this);
             pylon.setPersistenceRequired();
-            sl.addFreshEntity(pylon);
-            shieldPylons.add(pylon.getUUID());
+            // Only track guardians that the world actually accepted. This keeps
+            // failed spawns from creating invisible shield links or false counts.
+            if (sl.addFreshEntity(pylon)) {
+                shieldPylons.add(pylon.getUUID());
+            } else {
+                pylon.discard();
+            }
         }
         if (shieldPylons.isEmpty()) return;
         shieldActive = true;
-        broadcastNearby(fillShield(cfg.message, count));
+        broadcastNearby(fillShield(cfg.message, shieldPylons.size()));
     }
 
     private void dropShield(boolean broken) {
+        // A phase change can end a shield before its guardians are defeated.
+        // Remove those encounter-owned minions instead of orphaning them in the arena.
+        if (!broken && level() instanceof ServerLevel sl) {
+            for (UUID id : shieldPylons) {
+                Entity guardian = sl.getEntity(id);
+                if (guardian != null) guardian.discard();
+            }
+        }
         shieldActive = false;
         shieldPylons.clear();
         PhaseDefinition phase = phaseManager != null ? phaseManager.getCurrentPhase() : null;
-        if (broken && phase != null && phase.shield != null) broadcastNearby(fillShield(phase.shield.brokenMessage, 0));
+        if (broken && level() instanceof ServerLevel sl) {
+            // Shatter outward instead of silently removing the protection.
+            sl.sendParticles(ParticleTypes.SNOWFLAKE,
+                    getX(), getY() + 1.4, getZ(),
+                    90, 2.8, 1.8, 2.8, 0.12);
+            sl.sendParticles(ParticleTypes.CLOUD,
+                    getX(), getY() + 1.0, getZ(),
+                    24, 1.8, 0.8, 1.8, 0.08);
+            sl.playSound(null, getX(), getY(), getZ(),
+                    SoundEvents.SHIELD_BREAK, SoundSource.HOSTILE, 2.0f, 0.65f);
+        }
+        if (broken && phase != null && phase.shield != null) {
+            broadcastNearby(fillShield(phase.shield.brokenMessage, 0));
+        }
     }
 
     /** Removes this boss's shield pylons (arena reset, new shield). */
@@ -951,6 +1098,11 @@ public class BossEntity extends Monster {
     private void tickGuards() {
         if (definition == null || !(level() instanceof ServerLevel sl)) return;
         tickVehicle();
+
+        // Keep shield state and its visual effects responsive every tick. The remaining
+        // anti-cheese, rage and arena work below stays throttled to once per second.
+        if (tracksFight() && bossState == BossState.ACTIVE) tickShield(sl);
+
         if (tickCount % 20 != 0) return;
         if (home == null) home = position();
         long now = sl.getGameTime();
@@ -959,7 +1111,6 @@ public class BossEntity extends Monster {
             stuckTracker.reset();
             return;
         }
-        if (tracksFight()) tickShield(sl);
         tickAntiCheese(sl, now);
     }
 
@@ -1318,8 +1469,37 @@ public class BossEntity extends Monster {
         movementController.reset();
     }
     public String getDisguiseEntity() { return entityData.get(DATA_DISGUISE_ENTITY); }
+
+    /**
+     * Starts a short, synchronized full-body attack cue. The client disguise renderer
+     * uses this state to animate the displayed Pokémon model, while swing() keeps
+     * the normal held-item animation for non-disguised bosses.
+     */
+    public void playAttackAnimation() { playAttackAnimation(1); }
+
+    /** Starts a named motion: 1 slash, 2 heavy smash, 3 ground slam, 4 ranged cast, 5 charge, 6 phase awakening. */
+    public void playAttackAnimation(int animation) {
+        entityData.set(DATA_ATTACK_ANIMATION, Math.max(1, Math.min(7, animation)));
+        entityData.set(DATA_ATTACK_ANIMATION_TICKS, animation == 7 ? 90 : (animation == 6 ? 50 : (animation == 2 || animation == 3 ? 34 : 28)));
+        swing(InteractionHand.MAIN_HAND);
+    }
+
+    public int getAttackAnimation() { return entityData.get(DATA_ATTACK_ANIMATION); }
+    public int getAttackAnimationTicks() { return entityData.get(DATA_ATTACK_ANIMATION_TICKS); }
     public void setDisguiseEntity(String entityId) {
+        pendingDisguiseEntity = null;
+        pendingDisguiseTicks = 0;
         entityData.set(DATA_DISGUISE_ENTITY, entityId != null && !"custom".equalsIgnoreCase(entityId) ? entityId : "");
+    }
+
+    /** Keep the current form during a transformation, then reveal the new disguise on cue. */
+    public void setDisguiseEntityAfterTicks(String entityId, int ticks) {
+        if (entityId == null || entityId.isBlank() || ticks <= 0) {
+            setDisguiseEntity(entityId);
+            return;
+        }
+        pendingDisguiseEntity = entityId;
+        pendingDisguiseTicks = ticks;
     }
 
     // ── Body size: the hitbox follows the disguise, `scale` and `reach` ─────────
